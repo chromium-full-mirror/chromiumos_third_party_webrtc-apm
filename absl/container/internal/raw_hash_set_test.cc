@@ -26,6 +26,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/base/attributes.h"
+#include "absl/base/config.h"
 #include "absl/base/internal/cycleclock.h"
 #include "absl/base/internal/raw_logging.h"
 #include "absl/container/internal/container_memory.h"
@@ -35,6 +36,7 @@
 #include "absl/strings/string_view.h"
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace container_internal {
 
 struct RawHashSetTestOnlyAccess {
@@ -343,7 +345,25 @@ struct IntTable
     : raw_hash_set<IntPolicy, container_internal::hash_default_hash<int64_t>,
                    std::equal_to<int64_t>, std::allocator<int64_t>> {
   using Base = typename IntTable::raw_hash_set;
-  IntTable() {}
+  using Base::Base;
+};
+
+template <typename T>
+struct CustomAlloc : std::allocator<T> {
+  CustomAlloc() {}
+
+  template <typename U>
+  CustomAlloc(const CustomAlloc<U>& other) {}
+
+  template<class U> struct rebind {
+    using other = CustomAlloc<U>;
+  };
+};
+
+struct CustomAllocIntTable
+    : raw_hash_set<IntPolicy, container_internal::hash_default_hash<int64_t>,
+                   std::equal_to<int64_t>, CustomAlloc<int64_t>> {
+  using Base = typename CustomAllocIntTable::raw_hash_set;
   using Base::Base;
 };
 
@@ -397,52 +417,6 @@ TEST(Table, Empty) {
   IntTable t;
   EXPECT_EQ(0, t.size());
   EXPECT_TRUE(t.empty());
-}
-
-#ifdef __GNUC__
-template <class T>
-ABSL_ATTRIBUTE_ALWAYS_INLINE inline void DoNotOptimize(const T& v) {
-  asm volatile("" : : "r,m"(v) : "memory");
-}
-#endif
-
-TEST(Table, Prefetch) {
-  IntTable t;
-  t.emplace(1);
-  // Works for both present and absent keys.
-  t.prefetch(1);
-  t.prefetch(2);
-
-  // Do not run in debug mode, when prefetch is not implemented, or when
-  // sanitizers are enabled.
-#if defined(NDEBUG) && defined(__GNUC__) && !defined(ADDRESS_SANITIZER) && \
-    !defined(MEMORY_SANITIZER) && !defined(THREAD_SANITIZER) &&            \
-    !defined(UNDEFINED_BEHAVIOR_SANITIZER)
-  const auto now = [] { return absl::base_internal::CycleClock::Now(); };
-
-  // Make size enough to not fit in L2 cache (16.7 Mb)
-  static constexpr int size = 1 << 22;
-  for (int i = 0; i < size; ++i) t.insert(i);
-
-  int64_t no_prefetch = 0, prefetch = 0;
-  for (int iter = 0; iter < 10; ++iter) {
-    int64_t time = now();
-    for (int i = 0; i < size; ++i) {
-      DoNotOptimize(t.find(i));
-    }
-    no_prefetch += now() - time;
-
-    time = now();
-    for (int i = 0; i < size; ++i) {
-      t.prefetch(i + 20);
-      DoNotOptimize(t.find(i));
-    }
-    prefetch += now() - time;
-  }
-
-  // no_prefetch is at least 30% slower.
-  EXPECT_GE(1.0 * no_prefetch / prefetch, 1.3);
-#endif
 }
 
 TEST(Table, LookupEmpty) {
@@ -1062,7 +1036,7 @@ ProbeStats CollectProbeStatsOnKeysXoredWithSeed(const std::vector<int64_t>& keys
 
 ExpectedStats XorSeedExpectedStats() {
   constexpr bool kRandomizesInserts =
-#if NDEBUG
+#ifdef NDEBUG
       false;
 #else   // NDEBUG
       true;
@@ -1156,7 +1130,7 @@ ProbeStats CollectProbeStatsOnLinearlyTransformedKeys(
 
 ExpectedStats LinearTransformExpectedStats() {
   constexpr bool kRandomizesInserts =
-#if NDEBUG
+#ifdef NDEBUG
       false;
 #else   // NDEBUG
       true;
@@ -1346,37 +1320,31 @@ TEST(Table, ConstructFromInitList) {
 
 TEST(Table, CopyConstruct) {
   IntTable t;
-  t.max_load_factor(.321f);
   t.emplace(0);
   EXPECT_EQ(1, t.size());
   {
     IntTable u(t);
     EXPECT_EQ(1, u.size());
-    EXPECT_EQ(t.max_load_factor(), u.max_load_factor());
     EXPECT_THAT(*u.find(0), 0);
   }
   {
     IntTable u{t};
     EXPECT_EQ(1, u.size());
-    EXPECT_EQ(t.max_load_factor(), u.max_load_factor());
     EXPECT_THAT(*u.find(0), 0);
   }
   {
     IntTable u = t;
     EXPECT_EQ(1, u.size());
-    EXPECT_EQ(t.max_load_factor(), u.max_load_factor());
     EXPECT_THAT(*u.find(0), 0);
   }
 }
 
 TEST(Table, CopyConstructWithAlloc) {
   StringTable t;
-  t.max_load_factor(.321f);
   t.emplace("a", "b");
   EXPECT_EQ(1, t.size());
   StringTable u(t, Alloc<std::pair<std::string, std::string>>());
   EXPECT_EQ(1, u.size());
-  EXPECT_EQ(t.max_load_factor(), u.max_load_factor());
   EXPECT_THAT(*u.find("a"), Pair("a", "b"));
 }
 
@@ -1394,88 +1362,68 @@ TEST(Table, AllocWithExplicitCtor) {
 TEST(Table, MoveConstruct) {
   {
     StringTable t;
-    t.max_load_factor(.321f);
-    const float lf = t.max_load_factor();
     t.emplace("a", "b");
     EXPECT_EQ(1, t.size());
 
     StringTable u(std::move(t));
     EXPECT_EQ(1, u.size());
-    EXPECT_EQ(lf, u.max_load_factor());
     EXPECT_THAT(*u.find("a"), Pair("a", "b"));
   }
   {
     StringTable t;
-    t.max_load_factor(.321f);
-    const float lf = t.max_load_factor();
     t.emplace("a", "b");
     EXPECT_EQ(1, t.size());
 
     StringTable u{std::move(t)};
     EXPECT_EQ(1, u.size());
-    EXPECT_EQ(lf, u.max_load_factor());
     EXPECT_THAT(*u.find("a"), Pair("a", "b"));
   }
   {
     StringTable t;
-    t.max_load_factor(.321f);
-    const float lf = t.max_load_factor();
     t.emplace("a", "b");
     EXPECT_EQ(1, t.size());
 
     StringTable u = std::move(t);
     EXPECT_EQ(1, u.size());
-    EXPECT_EQ(lf, u.max_load_factor());
     EXPECT_THAT(*u.find("a"), Pair("a", "b"));
   }
 }
 
 TEST(Table, MoveConstructWithAlloc) {
   StringTable t;
-  t.max_load_factor(.321f);
-  const float lf = t.max_load_factor();
   t.emplace("a", "b");
   EXPECT_EQ(1, t.size());
   StringTable u(std::move(t), Alloc<std::pair<std::string, std::string>>());
   EXPECT_EQ(1, u.size());
-  EXPECT_EQ(lf, u.max_load_factor());
   EXPECT_THAT(*u.find("a"), Pair("a", "b"));
 }
 
 TEST(Table, CopyAssign) {
   StringTable t;
-  t.max_load_factor(.321f);
   t.emplace("a", "b");
   EXPECT_EQ(1, t.size());
   StringTable u;
   u = t;
   EXPECT_EQ(1, u.size());
-  EXPECT_EQ(t.max_load_factor(), u.max_load_factor());
   EXPECT_THAT(*u.find("a"), Pair("a", "b"));
 }
 
 TEST(Table, CopySelfAssign) {
   StringTable t;
-  t.max_load_factor(.321f);
-  const float lf = t.max_load_factor();
   t.emplace("a", "b");
   EXPECT_EQ(1, t.size());
   t = *&t;
   EXPECT_EQ(1, t.size());
-  EXPECT_EQ(lf, t.max_load_factor());
   EXPECT_THAT(*t.find("a"), Pair("a", "b"));
 }
 
 TEST(Table, MoveAssign) {
   StringTable t;
-  t.max_load_factor(.321f);
-  const float lf = t.max_load_factor();
   t.emplace("a", "b");
   EXPECT_EQ(1, t.size());
   StringTable u;
   u = std::move(t);
   EXPECT_EQ(1, u.size());
-  EXPECT_EQ(lf, u.max_load_factor());
   EXPECT_THAT(*u.find("a"), Pair("a", "b"));
 }
 
@@ -1719,9 +1667,9 @@ TEST(Nodes, EmptyNodeType) {
 }
 
 TEST(Nodes, ExtractInsert) {
-  constexpr char k0[] = "Very long std::string zero.";
-  constexpr char k1[] = "Very long std::string one.";
-  constexpr char k2[] = "Very long std::string two.";
+  constexpr char k0[] = "Very long string zero.";
+  constexpr char k1[] = "Very long string one.";
+  constexpr char k2[] = "Very long string two.";
   StringTable t = {{k0, ""}, {k1, ""}, {k2, ""}};
   EXPECT_THAT(t,
               UnorderedElementsAre(Pair(k0, ""), Pair(k1, ""), Pair(k2, "")));
@@ -1785,7 +1733,7 @@ TEST(Table, IterationOrderChangesByInstance) {
 
     std::vector<IntTable> tables;
     bool found_difference = false;
-    for (int i = 0; !found_difference && i < 500; ++i) {
+    for (int i = 0; !found_difference && i < 5000; ++i) {
       tables.push_back(MakeSimpleTable(size));
       found_difference = OrderOfIteration(tables.back()) != reference;
     }
@@ -1799,7 +1747,7 @@ TEST(Table, IterationOrderChangesByInstance) {
 
 TEST(Table, IterationOrderChangesOnRehash) {
   std::vector<IntTable> garbage;
-  for (int i = 0; i < 500; ++i) {
+  for (int i = 0; i < 5000; ++i) {
     auto t = MakeSimpleTable(20);
     const auto reference = OrderOfIteration(t);
     // Force rehash to the same size.
@@ -1844,10 +1792,11 @@ TEST(TableDeathTest, EraseOfEndAsserts) {
 
   IntTable t;
   // Extra simple "regexp" as regexp support is highly varied across platforms.
-  constexpr char kDeathMsg[] = "it != end";
+  constexpr char kDeathMsg[] = "Invalid operation on iterator";
   EXPECT_DEATH_IF_SUPPORTED(t.erase(t.end()), kDeathMsg);
 }
 
+#if defined(ABSL_HASHTABLEZ_SAMPLE)
 TEST(RawHashSamplerTest, Sample) {
   // Enable the feature even if the prod default is off.
   SetHashtablezEnabled(true);
@@ -1868,8 +1817,30 @@ TEST(RawHashSamplerTest, Sample) {
   EXPECT_NEAR((end_size - start_size) / static_cast<double>(tables.size()),
               0.01, 0.005);
 }
+#endif  // ABSL_HASHTABLEZ_SAMPLER
 
-#ifdef ADDRESS_SANITIZER
+TEST(RawHashSamplerTest, DoNotSampleCustomAllocators) {
+  // Enable the feature even if the prod default is off.
+  SetHashtablezEnabled(true);
+  SetHashtablezSampleParameter(100);
+
+  auto& sampler = HashtablezSampler::Global();
+  size_t start_size = 0;
+  start_size += sampler.Iterate([&](const HashtablezInfo&) { ++start_size; });
+
+  std::vector<CustomAllocIntTable> tables;
+  for (int i = 0; i < 1000000; ++i) {
+    tables.emplace_back();
+    tables.back().insert(1);
+  }
+  size_t end_size = 0;
+  end_size += sampler.Iterate([&](const HashtablezInfo&) { ++end_size; });
+
+  EXPECT_NEAR((end_size - start_size) / static_cast<double>(tables.size()),
+              0.00, 0.001);
+}
+
+#ifdef ABSL_HAVE_ADDRESS_SANITIZER
 TEST(Sanitizer, PoisoningUnused) {
   IntTable t;
   t.reserve(5);
@@ -1893,8 +1864,9 @@ TEST(Sanitizer, PoisoningOnErase) {
   t.erase(0);
   EXPECT_TRUE(__asan_address_is_poisoned(&v));
 }
-#endif  // ADDRESS_SANITIZER
+#endif  // ABSL_HAVE_ADDRESS_SANITIZER
 
 }  // namespace
 }  // namespace container_internal
+ABSL_NAMESPACE_END
 }  // namespace absl

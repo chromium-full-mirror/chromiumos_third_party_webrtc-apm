@@ -17,7 +17,6 @@
 
 #include <mmsystem.h>
 
-#include "rtc_base/critical_section.h"
 
 #elif defined(WEBRTC_POSIX)
 
@@ -26,12 +25,15 @@
 
 #endif  // defined(WEBRTC_POSIX)
 
-#include "rtc_base/synchronization/rw_lock_wrapper.h"
+#include "rtc_base/synchronization/mutex.h"
 #include "rtc_base/time_utils.h"
 
 namespace webrtc {
 
 class RealTimeClock : public Clock {
+  Timestamp CurrentTime() override {
+    return Timestamp::Micros(rtc::TimeMicros());
+  }
   // Return a timestamp in milliseconds relative to some arbitrary source; the
   // source is fixed for this clock.
   int64_t TimeInMilliseconds() override { return rtc::TimeMillis(); }
@@ -147,7 +149,7 @@ class WindowsRealTimeClock : public RealTimeClock {
     DWORD t;
     LARGE_INTEGER elapsed_ms;
     {
-      rtc::CritScope lock(&crit_);
+      MutexLock lock(&mutex_);
       // time MUST be fetched inside the critical section to avoid non-monotonic
       // last_time_ms_ values that'll register as incorrect wraparounds due to
       // concurrent calls to GetTime.
@@ -197,7 +199,7 @@ class WindowsRealTimeClock : public RealTimeClock {
     return ref;
   }
 
-  rtc::CriticalSection crit_;
+  Mutex mutex_;
   DWORD last_time_ms_;
   LONG num_timer_wraps_;
   const ReferencePoint ref_point_;
@@ -236,18 +238,15 @@ Clock* Clock::GetRealTimeClock() {
 }
 
 SimulatedClock::SimulatedClock(int64_t initial_time_us)
-    : time_us_(initial_time_us), lock_(RWLockWrapper::CreateRWLock()) {}
+    : time_us_(initial_time_us) {}
+
+SimulatedClock::SimulatedClock(Timestamp initial_time)
+    : SimulatedClock(initial_time.us()) {}
 
 SimulatedClock::~SimulatedClock() {}
 
-int64_t SimulatedClock::TimeInMilliseconds() {
-  ReadLockScoped synchronize(*lock_);
-  return (time_us_ + 500) / 1000;
-}
-
-int64_t SimulatedClock::TimeInMicroseconds() {
-  ReadLockScoped synchronize(*lock_);
-  return time_us_;
+Timestamp SimulatedClock::CurrentTime() {
+  return Timestamp::Micros(time_us_.load(std::memory_order_relaxed));
 }
 
 NtpTime SimulatedClock::CurrentNtpTime() {
@@ -263,12 +262,20 @@ int64_t SimulatedClock::CurrentNtpInMilliseconds() {
 }
 
 void SimulatedClock::AdvanceTimeMilliseconds(int64_t milliseconds) {
-  AdvanceTimeMicroseconds(1000 * milliseconds);
+  AdvanceTime(TimeDelta::Millis(milliseconds));
 }
 
 void SimulatedClock::AdvanceTimeMicroseconds(int64_t microseconds) {
-  WriteLockScoped synchronize(*lock_);
-  time_us_ += microseconds;
+  AdvanceTime(TimeDelta::Micros(microseconds));
+}
+
+// TODO(bugs.webrtc.org(12102): It's desirable to let a single thread own
+// advancement of the clock. We could then replace this read-modify-write
+// operation with just a thread checker. But currently, that breaks a couple of
+// tests, in particular, RepeatingTaskTest.ClockIntegration and
+// CallStatsTest.LastProcessedRtt.
+void SimulatedClock::AdvanceTime(TimeDelta delta) {
+  time_us_.fetch_add(delta.us(), std::memory_order_relaxed);
 }
 
 }  // namespace webrtc

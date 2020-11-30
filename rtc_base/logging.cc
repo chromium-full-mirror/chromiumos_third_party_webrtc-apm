@@ -8,6 +8,12 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "rtc_base/logging.h"
+
+#include <string.h>
+
+#if RTC_LOG_ENABLED()
+
 #if defined(WEBRTC_WIN)
 #include <windows.h>
 #if _MSC_VER < 1900
@@ -27,20 +33,21 @@
 static const int kMaxLogLineSize = 1024 - 60;
 #endif  // WEBRTC_MAC && !defined(WEBRTC_IOS) || WEBRTC_ANDROID
 
+#include <inttypes.h>
 #include <stdio.h>
-#include <string.h>
 #include <time.h>
+
 #include <algorithm>
 #include <cstdarg>
 #include <vector>
 
+#include "absl/base/attributes.h"
 #include "rtc_base/checks.h"
-#include "rtc_base/critical_section.h"
-#include "rtc_base/logging.h"
 #include "rtc_base/platform_thread_types.h"
 #include "rtc_base/string_encode.h"
 #include "rtc_base/string_utils.h"
 #include "rtc_base/strings/string_builder.h"
+#include "rtc_base/synchronization/mutex.h"
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/time_utils.h"
 
@@ -66,20 +73,10 @@ const char* FilenameFromPath(const char* file) {
 }
 
 // Global lock for log subsystem, only needed to serialize access to streams_.
-CriticalSection g_log_crit;
+// TODO(bugs.webrtc.org/11665): this is not currently constant initialized and
+// trivially destructible.
+webrtc::Mutex g_log_mutex_;
 }  // namespace
-
-// Inefficient default implementation, override is recommended.
-void LogSink::OnLogMessage(const std::string& msg,
-                           LoggingSeverity severity,
-                           const char* tag) {
-  OnLogMessage(tag + (": " + msg), severity);
-}
-
-void LogSink::OnLogMessage(const std::string& msg,
-                           LoggingSeverity /* severity */) {
-  OnLogMessage(msg);
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // LogMessage
@@ -91,7 +88,9 @@ bool LogMessage::log_to_stderr_ = true;
 // Note: we explicitly do not clean this up, because of the uncertain ordering
 // of destructors at program exit.  Let the person who sets the stream trigger
 // cleanup by setting to null, or let it leak (safe at program exit).
-LogMessage::StreamList LogMessage::streams_ RTC_GUARDED_BY(g_log_crit);
+ABSL_CONST_INIT LogSink* LogMessage::streams_ RTC_GUARDED_BY(g_log_mutex_) =
+    nullptr;
+ABSL_CONST_INIT std::atomic<bool> LogMessage::streams_empty_ = {true};
 
 // Boolean options default to false (0)
 bool LogMessage::thread_, LogMessage::timestamp_;
@@ -112,9 +111,13 @@ LogMessage::LogMessage(const char* file,
     // Also ensure WallClockStartTime is initialized, so that it matches
     // LogStartTime.
     WallClockStartTime();
-    print_stream_ << "[" << rtc::LeftPad('0', 3, rtc::ToString(time / 1000))
-                  << ":" << rtc::LeftPad('0', 3, rtc::ToString(time % 1000))
-                  << "] ";
+    // TODO(kwiberg): Switch to absl::StrFormat, if binary size is ok.
+    char timestamp[50];  // Maximum string length of an int64_t is 20.
+    int len =
+        snprintf(timestamp, sizeof(timestamp), "[%03" PRId64 ":%03" PRId64 "]",
+                 time / 1000, time % 1000);
+    RTC_DCHECK_LT(len, sizeof(timestamp));
+    print_stream_ << timestamp;
   }
 
   if (thread_) {
@@ -156,13 +159,6 @@ LogMessage::LogMessage(const char* file,
         break;
       }
 #endif  // WEBRTC_WIN
-#if defined(WEBRTC_MAC) && !defined(WEBRTC_IOS)
-      case ERRCTX_OSSTATUS: {
-        std::string desc(DescriptionFromOSStatus(err));
-        tmp << " " << (desc.empty() ? "Unknown error" : desc.c_str());
-        break;
-      }
-#endif  // WEBRTC_MAC && !defined(WEBRTC_IOS)
       default:
         break;
     }
@@ -205,13 +201,13 @@ LogMessage::~LogMessage() {
 #endif
   }
 
-  CritScope cs(&g_log_crit);
-  for (auto& kv : streams_) {
-    if (severity_ >= kv.second) {
+  webrtc::MutexLock lock(&g_log_mutex_);
+  for (LogSink* entry = streams_; entry != nullptr; entry = entry->next_) {
+    if (severity_ >= entry->min_severity_) {
 #if defined(WEBRTC_ANDROID)
-      kv.first->OnLogMessage(str, severity_, tag_);
+      entry->OnLogMessage(str, severity_, tag_);
 #else
-      kv.first->OnLogMessage(str, severity_);
+      entry->OnLogMessage(str, severity_);
 #endif
     }
   }
@@ -254,7 +250,7 @@ void LogMessage::LogTimestamps(bool on) {
 
 void LogMessage::LogToDebug(LoggingSeverity min_sev) {
   g_dbg_sev = min_sev;
-  CritScope cs(&g_log_crit);
+  webrtc::MutexLock lock(&g_log_mutex_);
   UpdateMinLogSeverity();
 }
 
@@ -263,30 +259,35 @@ void LogMessage::SetLogToStderr(bool log_to_stderr) {
 }
 
 int LogMessage::GetLogToStream(LogSink* stream) {
-  CritScope cs(&g_log_crit);
+  webrtc::MutexLock lock(&g_log_mutex_);
   LoggingSeverity sev = LS_NONE;
-  for (auto& kv : streams_) {
-    if (!stream || stream == kv.first) {
-      sev = std::min(sev, kv.second);
+  for (LogSink* entry = streams_; entry != nullptr; entry = entry->next_) {
+    if (stream == nullptr || stream == entry) {
+      sev = std::min(sev, entry->min_severity_);
     }
   }
   return sev;
 }
 
 void LogMessage::AddLogToStream(LogSink* stream, LoggingSeverity min_sev) {
-  CritScope cs(&g_log_crit);
-  streams_.push_back(std::make_pair(stream, min_sev));
+  webrtc::MutexLock lock(&g_log_mutex_);
+  stream->min_severity_ = min_sev;
+  stream->next_ = streams_;
+  streams_ = stream;
+  streams_empty_.store(false, std::memory_order_relaxed);
   UpdateMinLogSeverity();
 }
 
 void LogMessage::RemoveLogToStream(LogSink* stream) {
-  CritScope cs(&g_log_crit);
-  for (StreamList::iterator it = streams_.begin(); it != streams_.end(); ++it) {
-    if (stream == it->first) {
-      streams_.erase(it);
+  webrtc::MutexLock lock(&g_log_mutex_);
+  for (LogSink** entry = &streams_; *entry != nullptr;
+       entry = &(*entry)->next_) {
+    if (*entry == stream) {
+      *entry = (*entry)->next_;
       break;
     }
   }
+  streams_empty_.store(streams_ == nullptr, std::memory_order_relaxed);
   UpdateMinLogSeverity();
 }
 
@@ -340,11 +341,10 @@ void LogMessage::ConfigureLogging(const char* params) {
 }
 
 void LogMessage::UpdateMinLogSeverity()
-    RTC_EXCLUSIVE_LOCKS_REQUIRED(g_log_crit) {
+    RTC_EXCLUSIVE_LOCKS_REQUIRED(g_log_mutex_) {
   LoggingSeverity min_sev = g_dbg_sev;
-  for (const auto& kv : streams_) {
-    const LoggingSeverity sev = kv.second;
-    min_sev = std::min(min_sev, sev);
+  for (LogSink* entry = streams_; entry != nullptr; entry = entry->next_) {
+    min_sev = std::min(min_sev, entry->min_severity_);
   }
   g_min_sev = min_sev;
 }
@@ -445,15 +445,7 @@ void LogMessage::OutputToDebug(const std::string& str,
 bool LogMessage::IsNoop(LoggingSeverity severity) {
   if (severity >= g_dbg_sev || severity >= g_min_sev)
     return false;
-
-  // TODO(tommi): We're grabbing this lock for every LogMessage instance that
-  // is going to be logged. This introduces unnecessary synchronization for
-  // a feature that's mostly used for testing.
-  CritScope cs(&g_log_crit);
-  if (streams_.size() > 0)
-    return false;
-
-  return true;
+  return streams_empty_.load(std::memory_order_relaxed);
 }
 
 void LogMessage::FinishPrintStream() {
@@ -492,11 +484,6 @@ void Log(const LogArgType* fmt, ...) {
       va_end(args);
       return;
     }
-  }
-
-  if (LogMessage::IsNoop(meta.meta.Severity())) {
-    va_end(args);
-    return;
   }
 
   LogMessage log_message(meta.meta.File(), meta.meta.Line(),
@@ -557,4 +544,19 @@ void Log(const LogArgType* fmt, ...) {
 }
 
 }  // namespace webrtc_logging_impl
+}  // namespace rtc
+#endif
+
+namespace rtc {
+// Inefficient default implementation, override is recommended.
+void LogSink::OnLogMessage(const std::string& msg,
+                           LoggingSeverity severity,
+                           const char* tag) {
+  OnLogMessage(tag + (": " + msg), severity);
+}
+
+void LogSink::OnLogMessage(const std::string& msg,
+                           LoggingSeverity /* severity */) {
+  OnLogMessage(msg);
+}
 }  // namespace rtc

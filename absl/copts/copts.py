@@ -56,7 +56,6 @@ LLVM_DISABLE_WARNINGS_FLAGS = [
     "-Wno-global-constructors",
     "-Wno-exit-time-destructors",
     ###
-    "-Wno-nested-anon-types",
     "-Wno-non-modular-include-in-module",
     "-Wno-old-style-cast",
     # Warns on preferred usage of non-POD types such as string_view
@@ -65,12 +64,13 @@ LLVM_DISABLE_WARNINGS_FLAGS = [
     "-Wno-shorten-64-to-32",
     "-Wno-switch-enum",
     "-Wno-thread-safety-negative",
-    "-Wno-undef",
     "-Wno-unknown-warning-option",
     "-Wno-unreachable-code",
     # Causes warnings on include guards
     "-Wno-unused-macros",
     "-Wno-weak-vtables",
+    # Causes warnings on usage of types/compare.h comparison operators.
+    "-Wno-zero-as-null-pointer-constant",
     ###
     # Implicit conversion warnings turned off by -Wno-conversion
     # which are re-enabled below.
@@ -89,6 +89,7 @@ LLVM_DISABLE_WARNINGS_FLAGS = [
 
 LLVM_TEST_DISABLE_WARNINGS_FLAGS = [
     "-Wno-c99-extensions",
+    "-Wno-deprecated-declarations",
     "-Wno-missing-noreturn",
     "-Wno-missing-prototypes",
     "-Wno-missing-variable-declarations",
@@ -105,10 +106,6 @@ LLVM_TEST_DISABLE_WARNINGS_FLAGS = [
     "-Wno-zero-as-null-pointer-constant",
     # gtest depends on this GNU extension being offered.
     "-Wno-gnu-zero-variadic-macro-arguments",
-]
-
-MSVC_STYLE_EXCEPTIONS_FLAGS = [
-    "/U_HAS_EXCEPTIONS", "/D_HAS_EXCEPTIONS=1", "/EHsc"
 ]
 
 MSVC_DEFINES = [
@@ -131,6 +128,7 @@ COPT_VARS = {
         "-Wmissing-declarations",
         "-Woverlength-strings",
         "-Wpointer-arith",
+        "-Wundef",
         "-Wunused-local-typedefs",
         "-Wunused-result",
         "-Wvarargs",
@@ -143,36 +141,66 @@ COPT_VARS = {
         # Google style does not use unsigned integers, though STL containers
         # have unsigned types.
         "-Wno-sign-compare",
+        # Don't define min and max macros (Build on Windows using gcc)
+        "-DNOMINMAX",
     ],
     "ABSL_GCC_TEST_FLAGS": [
         "-Wno-conversion-null",
+        "-Wno-deprecated-declarations",
         "-Wno-missing-declarations",
         "-Wno-sign-compare",
         "-Wno-unused-function",
         "-Wno-unused-parameter",
         "-Wno-unused-private-field",
     ],
-    "ABSL_GCC_EXCEPTIONS_FLAGS": ["-fexceptions"],
-    "ABSL_LLVM_FLAGS": LLVM_BIG_WARNING_FLAGS + LLVM_DISABLE_WARNINGS_FLAGS,
-    "ABSL_LLVM_TEST_FLAGS": LLVM_TEST_DISABLE_WARNINGS_FLAGS,
-    "ABSL_LLVM_EXCEPTIONS_FLAGS": ["-fexceptions"],
-    "ABSL_CLANG_CL_FLAGS": (MSVC_BIG_WARNING_FLAGS +
-                            LLVM_DISABLE_WARNINGS_FLAGS + MSVC_DEFINES),
-    "ABSL_CLANG_CL_TEST_FLAGS": LLVM_TEST_DISABLE_WARNINGS_FLAGS,
-    "ABSL_CLANG_CL_EXCEPTIONS_FLAGS": MSVC_STYLE_EXCEPTIONS_FLAGS,
-    "ABSL_MSVC_FLAGS": MSVC_BIG_WARNING_FLAGS + MSVC_DEFINES + [
-        "/wd4005",  # macro-redefinition
-        "/wd4068",  # unknown pragma
-        "/wd4180",  # qualifier applied to function type has no meaning; ignored
-        "/wd4244",  # conversion from 'type1' to 'type2', possible loss of data
-        "/wd4267",  # conversion from 'size_t' to 'type', possible loss of data
-        # forcing value to bool 'true' or 'false' (performance warning)
-        "/wd4800",
-    ],
+    "ABSL_LLVM_FLAGS":
+        LLVM_BIG_WARNING_FLAGS + LLVM_DISABLE_WARNINGS_FLAGS + [
+            # Don't define min and max macros (Build on Windows using clang)
+            "-DNOMINMAX",
+        ],
+    "ABSL_LLVM_TEST_FLAGS":
+        LLVM_TEST_DISABLE_WARNINGS_FLAGS,
+    "ABSL_CLANG_CL_FLAGS":
+        (MSVC_BIG_WARNING_FLAGS + LLVM_DISABLE_WARNINGS_FLAGS + MSVC_DEFINES),
+    "ABSL_CLANG_CL_TEST_FLAGS":
+        LLVM_TEST_DISABLE_WARNINGS_FLAGS,
+    "ABSL_MSVC_FLAGS":
+        MSVC_BIG_WARNING_FLAGS + MSVC_DEFINES + [
+            # Increase the number of sections available in object files
+            "/bigobj",
+            "/wd4005",  # macro-redefinition
+            "/wd4068",  # unknown pragma
+            # qualifier applied to function type has no meaning; ignored
+            "/wd4180",
+            # conversion from 'type1' to 'type2', possible loss of data
+            "/wd4244",
+            # conversion from 'size_t' to 'type', possible loss of data
+            "/wd4267",
+            # The decorated name was longer than the compiler limit
+            "/wd4503",
+            # forcing value to bool 'true' or 'false' (performance warning)
+            "/wd4800",
+        ],
     "ABSL_MSVC_TEST_FLAGS": [
         "/wd4018",  # signed/unsigned mismatch
         "/wd4101",  # unreferenced local variable
         "/wd4503",  # decorated name length exceeded, name was truncated
+        "/wd4996",  # use of deprecated symbol
+        "/DNOMINMAX",  # disable the min() and max() macros from <windows.h>
     ],
-    "ABSL_MSVC_EXCEPTIONS_FLAGS": MSVC_STYLE_EXCEPTIONS_FLAGS,
+    "ABSL_MSVC_LINKOPTS": [
+        # Object file doesn't export any previously undefined symbols
+        "-ignore:4221",
+    ],
+    # "HWAES" is an abbreviation for "hardware AES" (AES - Advanced Encryption
+    # Standard). These flags are used for detecting whether or not the target
+    # architecture has hardware support for AES instructions which can be used
+    # to improve performance of some random bit generators.
+    "ABSL_RANDOM_HWAES_ARM64_FLAGS": ["-march=armv8-a+crypto"],
+    "ABSL_RANDOM_HWAES_ARM32_FLAGS": ["-mfpu=neon"],
+    "ABSL_RANDOM_HWAES_X64_FLAGS": [
+        "-maes",
+        "-msse4.1",
+    ],
+    "ABSL_RANDOM_HWAES_MSVC_X64_FLAGS": [],
 }

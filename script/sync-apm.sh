@@ -45,6 +45,8 @@ rsync "${OPTIONS[@]}" ${FROM}/third_party/abseil-cpp/absl ${TO}
 mkdir -p ${TO}/third_party
 rsync "${OPTIONS[@]}" ${FROM}/third_party/rnnoise \
 	${TO}/third_party
+rsync "${OPTIONS[@]}" ${FROM}/third_party/pffft \
+	${TO}/third_party
 
 rsync "${OPTIONS[@]}" --include="*.cc" --include="*.h" --include="audio" \
 	--include="video" --include="transport" --include="units" \

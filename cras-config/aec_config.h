@@ -41,53 +41,83 @@
 #define AEC_DELAY_DELAY_SELECTION_THRESHOLD_CONVERGED \
 	"delay:delay_selection_thresholds_converged"
 #define AEC_DELAY_DELAY_SELECTION_THRESHOLD_CONVERGED_VALUE 20
+#define AEC_DELAY_USE_EXTERNAL_DELAY_ESTIMATOR \
+	"delay:use_external_delay_estimator"
+#define AEC_DELAY_USE_EXTERNAL_DELAY_ESTIMATOR_VALUE 0
+#define AEC_DELAY_LOG_WARNING_ON_DELAY_CHANGES \
+	"delay:log_warning_on_delay_changes"
+#define AEC_DELAY_LOG_WARNING_ON_DELAY_CHANGES_VALUE 0
+#define AEC_DELAY_RENDER_ALIGNMENT_MIXING_DOWNMIX \
+	"delay:render_alignment_mixing_downmix"
+#define AEC_DELAY_RENDER_ALIGNMENT_MIXING_DOWNMIX_VALUE 0
+#define AEC_DELAY_RENDER_ALIGNMENT_MIXING_ADAPTIVE_SELECTION \
+	"delay:render_alignment_mixing_adaptive_selection"
+#define AEC_DELAY_RENDER_ALIGNMENT_MIXING_ADAPTIVE_SELECTION_VALUE 1
+#define AEC_DELAY_RENDER_ALIGNMENT_MIXING_ACTIVITY_POWER_THRESHOLD \
+	"delay:render_alignment_mixing_activity_power_threshold"
+#define AEC_DELAY_RENDER_ALIGNMENT_MIXING_ACTIVITY_POWER_THRESHOLD_VALUE 10000.f
+#define AEC_DELAY_RENDER_ALIGNMENT_MIXING_PREFER_FIRST_TWO_CHANNELS \
+	"delay:render_alignment_mixing_prefer_first_two_channels"
+#define AEC_DELAY_RENDER_ALIGNMENT_MIXING_PREFER_FIRST_TWO_CHANNELS_VALUE 1
+#define AEC_DELAY_CAPTURE_ALIGNMENT_MIXING_DOWNMIX \
+	"delay:capture_alignment_mixing_downmix"
+#define AEC_DELAY_CAPTURE_ALIGNMENT_MIXING_DOWNMIX_VALUE 0
+#define AEC_DELAY_CAPTURE_ALIGNMENT_MIXING_ADAPTIVE_SELECTION \
+	"delay:capture_alignment_mixing_adaptive_selection"
+#define AEC_DELAY_CAPTURE_ALIGNMENT_MIXING_ADAPTIVE_SELECTION_VALUE 1
+#define AEC_DELAY_CAPTURE_ALIGNMENT_MIXING_ACTIVITY_POWER_THRESHOLD \
+	"delay:capture_alignment_mixing_activity_power_threshold"
+#define AEC_DELAY_CAPTURE_ALIGNMENT_MIXING_ACTIVITY_POWER_THRESHOLD_VALUE 10000.f
+#define AEC_DELAY_CAPTURE_ALIGNMENT_MIXING_PREFER_FIRST_TWO_CHANNELS \
+	"delay:capture_alignment_mixing_prefer_first_two_channels"
+#define AEC_DELAY_CAPTURE_ALIGNMENT_MIXING_PREFER_FIRST_TWO_CHANNELS_VALUE 0
 
-// Filter Main configuration
-#define AEC_FILTER_MAIN_LENGTH_BLOCKS "filter.main:length_blocks"
-#define AEC_FILTER_MAIN_LENGTH_BLOCKS_VALUE 13
-#define AEC_FILTER_MAIN_LEAKAGE_CONVERGED "filter.main:leakage_converged"
-#define AEC_FILTER_MAIN_LEAKAGE_CONVERGED_VALUE 0.00005f
-#define AEC_FILTER_MAIN_LEAKAGE_DIVERGED "filter.main:leakage_diverged"
-#define AEC_FILTER_MAIN_LEAKAGE_DIVERGED_VALUE 0.05f
-#define AEC_FILTER_MAIN_ERROR_FLOOR "filter.main:error_floor"
-#define AEC_FILTER_MAIN_ERROR_FLOOR_VALUE 0.001f
-#define AEC_FILTER_MAIN_ERROR_CEIL "filter.main:error_ceil"
-#define AEC_FILTER_MAIN_ERROR_CEIL_VALUE 2.f
-#define AEC_FILTER_MAIN_NOISE_GATE "filter.main:noise_gate"
-#define AEC_FILTER_MAIN_NOISE_GATE_VALUE 20075344.f
+// Filter refined configuration
+#define AEC_FILTER_REFINED_LENGTH_BLOCKS "filter.refined:length_blocks"
+#define AEC_FILTER_REFINED_LENGTH_BLOCKS_VALUE 13
+#define AEC_FILTER_REFINED_LEAKAGE_CONVERGED "filter.refined:leakage_converged"
+#define AEC_FILTER_REFINED_LEAKAGE_CONVERGED_VALUE 0.00005f
+#define AEC_FILTER_REFINED_LEAKAGE_DIVERGED "filter.refined:leakage_diverged"
+#define AEC_FILTER_REFINED_LEAKAGE_DIVERGED_VALUE 0.05f
+#define AEC_FILTER_REFINED_ERROR_FLOOR "filter.refined:error_floor"
+#define AEC_FILTER_REFINED_ERROR_FLOOR_VALUE 0.001f
+#define AEC_FILTER_REFINED_ERROR_CEIL "filter.refined:error_ceil"
+#define AEC_FILTER_REFINED_ERROR_CEIL_VALUE 2.f
+#define AEC_FILTER_REFINED_NOISE_GATE "filter.refined:noise_gate"
+#define AEC_FILTER_REFINED_NOISE_GATE_VALUE 20075344.f
 
-// Filter Shadow configuration
-#define AEC_FILTER_SHADOW_LENGTH_BLOCKS "filter.shadow:length_blocks"
-#define AEC_FILTER_SHADOW_LENGTH_BLOCKS_VALUE 13
-#define AEC_FILTER_SHADOW_RATE "filter.shadow:rate"
-#define AEC_FILTER_SHADOW_RATE_VALUE 0.7f
-#define AEC_FILTER_SHADOW_NOISE_GATE "filter.shadow:noise_gate"
-#define AEC_FILTER_SHADOW_NOISE_GATE_VALUE 20075344.f
+// Filter coarse configuration
+#define AEC_FILTER_COARSE_LENGTH_BLOCKS "filter.coarse:length_blocks"
+#define AEC_FILTER_COARSE_LENGTH_BLOCKS_VALUE 13
+#define AEC_FILTER_COARSE_RATE "filter.coarse:rate"
+#define AEC_FILTER_COARSE_RATE_VALUE 0.7f
+#define AEC_FILTER_COARSE_NOISE_GATE "filter.coarse:noise_gate"
+#define AEC_FILTER_COARSE_NOISE_GATE_VALUE 20075344.f
 
-// Filter Main initial configuration
-#define AEC_FILTER_MAIN_INIT_LENGTH_BLOCKS "filter.main_initial:length_blocks"
-#define AEC_FILTER_MAIN_INIT_LENGTH_BLOCKS_VALUE 12
-#define AEC_FILTER_MAIN_INIT_LEAKAGE_CONVERGED \
-	"filter.main_initial:leakage_converged"
-#define AEC_FILTER_MAIN_INIT_LEAKAGE_CONVERGED_VALUE 0.005f
-#define AEC_FILTER_MAIN_INIT_LEAKAGE_DIVERGED \
-	"filter.main_initial:leakage_diverged"
-#define AEC_FILTER_MAIN_INIT_LEAKAGE_DIVERGED_VALUE 0.5f
-#define AEC_FILTER_MAIN_INIT_ERROR_FLOOR "filter.main_initial:error_floor"
-#define AEC_FILTER_MAIN_INIT_ERROR_FLOOR_VALUE 0.001f
-#define AEC_FILTER_MAIN_INIT_ERROR_CEIL "filter.main_initial:error_ceil"
-#define AEC_FILTER_MAIN_INIT_ERROR_CEIL_VALUE 2.f
-#define AEC_FILTER_MAIN_INIT_NOISE_GATE "filter.main_initial:noise_gate"
-#define AEC_FILTER_MAIN_INIT_NOISE_GATE_VALUE 20075344.f
+// Filter refined initial configuration
+#define AEC_FILTER_REFINED_INIT_LENGTH_BLOCKS "filter.refined_initial:length_blocks"
+#define AEC_FILTER_REFINED_INIT_LENGTH_BLOCKS_VALUE 12
+#define AEC_FILTER_REFINED_INIT_LEAKAGE_CONVERGED \
+	"filter.refined_initial:leakage_converged"
+#define AEC_FILTER_REFINED_INIT_LEAKAGE_CONVERGED_VALUE 0.005f
+#define AEC_FILTER_REFINED_INIT_LEAKAGE_DIVERGED \
+	"filter.refined_initial:leakage_diverged"
+#define AEC_FILTER_REFINED_INIT_LEAKAGE_DIVERGED_VALUE 0.5f
+#define AEC_FILTER_REFINED_INIT_ERROR_FLOOR "filter.refined_initial:error_floor"
+#define AEC_FILTER_REFINED_INIT_ERROR_FLOOR_VALUE 0.001f
+#define AEC_FILTER_REFINED_INIT_ERROR_CEIL "filter.refined_initial:error_ceil"
+#define AEC_FILTER_REFINED_INIT_ERROR_CEIL_VALUE 2.f
+#define AEC_FILTER_REFINED_INIT_NOISE_GATE "filter.refined_initial:noise_gate"
+#define AEC_FILTER_REFINED_INIT_NOISE_GATE_VALUE 20075344.f
 
-// Filter Shadow initial configuration
-#define AEC_FILTER_SHADOW_INIT_LENGTH_BLOCKS \
-	"filter.shadow_initial:length_blocks"
-#define AEC_FILTER_SHADOW_INIT_LENGTH_BLOCKS_VALUE 12
-#define AEC_FILTER_SHADOW_INIT_RATE "filter.shadow_initial:rate"
-#define AEC_FILTER_SHADOW_INIT_RATE_VALUE 0.9f
-#define AEC_FILTER_SHADOW_INIT_NOISE_GATE "filter.shadow_initial:noise_gate"
-#define AEC_FILTER_SHADOW_INIT_NOISE_GATE_VALUE 20075344.f
+// Filter coarse initial configuration
+#define AEC_FILTER_COARSE_INIT_LENGTH_BLOCKS \
+	"filter.coarse_initial:length_blocks"
+#define AEC_FILTER_COARSE_INIT_LENGTH_BLOCKS_VALUE 12
+#define AEC_FILTER_COARSE_INIT_RATE "filter.coarse_initial:rate"
+#define AEC_FILTER_COARSE_INIT_RATE_VALUE 0.9f
+#define AEC_FILTER_COARSE_INIT_NOISE_GATE "filter.coarse_initial:noise_gate"
+#define AEC_FILTER_COARSE_INIT_NOISE_GATE_VALUE 20075344.f
 
 #define AEC_FILTER_CONFIG_CHANGE_DURATION_BLOCKS \
 	"filter:config_change_duration_blocks"
@@ -97,9 +127,15 @@
 #define AEC_FILTER_CONSERVATIVE_INITIAL_PHASE \
 	"filter:conservative_initial_phase"
 #define AEC_FILTER_CONSERVATIVE_INITIAL_PHASE_VALUE 0
-#define AEC_FILTER_ENABLE_SHADOW_FILTER_OUTPUT_USAGE \
-	"filter:enable_shadow_filter_output_usage"
-#define AEC_FILTER_ENABLE_SHADOW_FILTER_OUTPUT_USAGE_VALUE 1
+#define AEC_FILTER_ENABLE_COARSE_FILTER_OUTPUT_USAGE \
+	"filter:enable_coarse_filter_output_usage"
+#define AEC_FILTER_ENABLE_COARSE_FILTER_OUTPUT_USAGE_VALUE 1
+#define AEC_FILTER_USE_LINEAR_FILTER \
+	"filter:use_linear_filter"
+#define AEC_FILTER_USE_LINEAR_FILTER_VALUE 1
+#define AEC_FILTER_EXPORT_LINEAR_AEC_OUTPUT \
+	"filter:export_linear_aec_output"
+#define AEC_FILTER_EXPORT_LINEAR_AEC_OUTPUT_VALUE 0
 
 // Erle
 #define AEC_ERLE_MIN "erle:min"
@@ -112,15 +148,18 @@
 #define AEC_ERLE_ONSET_DETECTION_VALUE 1
 #define AEC_ERLE_NUM_SECTIONS "erle:num_sections"
 #define AEC_ERLE_NUM_SECTIONS_VALUE 1
+#define AEC_ERLE_CLAMP_QUALITY_ESTIMATE_TO_ZERO \
+	"erle:clamp_quality_estimate_to_zero"
+#define AEC_ERLE_CLAMP_QUALITY_ESTIMATE_TO_ZERO_VALUE 1
+#define AEC_ERLE_CLAMP_QUALITY_ESTIMATE_TO_ONE \
+	"erle:clamp_quality_estimate_to_one"
+#define AEC_ERLE_CLAMP_QUALITY_ESTIMATE_TO_ONE_VALUE 1
 
 // EpStrength
 #define AEC_EP_STRENGTH_DEFAULT_GAIN "ep_strength:default_gain"
 #define AEC_EP_STRENGTH_DEFAULT_GAIN_VALUE 1.f
 #define AEC_EP_STRENGTH_DEFAULT_LEN "ep_strength:default_len"
 #define AEC_EP_STRENGTH_DEFAULT_LEN_VALUE 0.83f
-#define AEC_EP_STRENGTH_REVERB_BASED_ON_RENDER \
-	"ep_strength:reverb_based_on_render"
-#define AEC_EP_STRENGTH_REVERB_BASED_ON_RENDER_VALUE 1
 #define AEC_EP_STRENGTH_ECHO_CAN_SATURATE "ep_strength:echo_can_saturate"
 #define AEC_EP_STRENGTH_ECHO_CAN_SATURATE_VALUE 1
 #define AEC_EP_STRENGTH_BOUNDED_ERL "ep_strength:bounded_erl"
@@ -142,9 +181,9 @@
 #define AEC_ECHO_AUDIBILITY_AUDIBILITY_THRESHOLD_HF \
 	"echo_audibility:audibility_threshold_hf"
 #define AEC_ECHO_AUDIBILITY_AUDIBILITY_THRESHOLD_HF_VALUE 10
-#define AEC_ECHO_AUDIBILITY_USE_STATIONARY_PROPERTIES \
-	"echo_audibility:use_stationary_properties"
-#define AEC_ECHO_AUDIBILITY_USE_STATIONARY_PROPERTIES_VALUE 0
+#define AEC_ECHO_AUDIBILITY_USE_STATIONARITY_PROPERTIES \
+	"echo_audibility:use_stationarity_properties"
+#define AEC_ECHO_AUDIBILITY_USE_STATIONARITY_PROPERTIES_VALUE 0
 #define AEC_ECHO_AUDIBILITY_USE_STATIONARITY_PROPERTIES_AT_INIT \
 	 "echo_audibility:use_stationarity_properties_at_init"
 #define AEC_ECHO_AUDIBILITY_USE_STATIONARITY_PROPERTIES_AT_INIT_VALUE 0
@@ -159,6 +198,9 @@
 #define AEC_RENDER_LEVELS_POOR_EXCITATION_RENDER_LIMIT_DS8 \
 	"render_levels:poor_excitation_render_limit_ds8"
 #define AEC_RENDER_LEVELS_POOR_EXCITATION_RENDER_LIMIT_DS8_VALUE 20.f
+#define AEC_RENDER_LEVELS_RENDER_POWER_GAIN_DB \
+	"render_levels:render_power_gain_db"
+#define AEC_RENDER_LEVELS_RENDER_POWER_GAIN_DB_VALUE 0.f
 
 // Echo removal controls
 #define AEC_ECHO_REMOVAL_CTL_HAS_CLOCK_DRIFT \
@@ -185,16 +227,12 @@
 #define AEC_ECHO_MODEL_RENDER_POST_WINDOW_SIZE \
 	"echo_model:render_post_window_size"
 #define AEC_ECHO_MODEL_RENDER_POST_WINDOW_SIZE_VALUE 1
-#define AEC_ECHO_MODEL_RENDER_PRE_WINDOW_SIZE_INIT \
-	"echo_model:render_pre_window_size_init"
-#define AEC_ECHO_MODEL_RENDER_PRE_WINDOW_SIZE_INIT_VALUE 10
-#define AEC_ECHO_MODEL_RENDER_POST_WINDOW_SIZE_INIT \
-	"echo_model:render_post_window_size_init"
-#define AEC_ECHO_MODEL_RENDER_POST_WINDOW_SIZE_INIT_VALUE 10
-#define AEC_ECHO_MODEL_NONLINEAR_HOLD "echo_model:nonlinear_hold"
-#define AEC_ECHO_MODEL_NONLINEAR_HOLD_VALUE 1
-#define AEC_ECHO_MODEL_NONLINEAR_RELEASE "echo_model:nonlinear_release"
-#define AEC_ECHO_MODEL_NONLINEAR_RELEASE_VALUE 0.001f
+#define AEC_ECHO_MODEL_MODEL_REVERB_IN_NONLINEAR_MODE \
+	"echo_model:model_reverb_in_nonlinear_mode"
+#define AEC_ECHO_MODEL_MODEL_REVERB_IN_NONLINEAR_MODE_VALUE 1
+
+#define AEC_COMFORT_NOISE_NOISE_FLOOR_DBFS "comfort_noise:noise_floor_dbfs"
+#define AEC_COMFORT_NOISE_NOISE_FLOOR_DBFS_VALUE -96.03406f
 
 #define AEC_SUPPRESSOR_NEAREND_AVERAGE_BLOCKS \
 	"suppressor:nearend_average_blocks"
@@ -273,20 +311,52 @@
 	"suppressor.dominant_nearend_detection:use_during_initial_phase"
 #define AEC_SUPPRESSOR_DOMINANT_NEAREND_DETECTION_USE_DURING_INITIAL_PHASE_VALUE 1
 
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_NEAREND_AVERAGE_BLOCKS \
+	"suppressor.subband_nearend_detection:nearend_average_blocks"
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_NEAREND_AVERAGE_BLOCKS_VALUE 1
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_SUBBAND1_LOW \
+	"suppressor.subband_nearend_detection:subband1.low"
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_SUBBAND1_LOW_VALUE 1
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_SUBBAND1_HIGH \
+	"suppressor.subband_nearend_detection:subband1.high"
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_SUBBAND1_HIGH_VALUE 1
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_SUBBAND2_LOW \
+	"suppressor.subband_nearend_detection:subband2.low"
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_SUBBAND2_LOW_VALUE 1
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_SUBBAND2_HIGH \
+	"suppressor.subband_nearend_detection:subband2.high"
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_SUBBAND2_HIGH_VALUE 1
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_NEAREND_THRESHOLD \
+	"suppressor.subband_nearend_detection:nearend_threshold"
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_NEAREND_THRESHOLD_VALUE 1.f
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_SNR_THRESHOLD \
+	"suppressor.subband_nearend_detection:snr_threshold"
+#define AEC_SUPPRESSOR_SUBBAND_NEAREND_DETECTION_SNR_THRESHOLD_VALUE 1.f
+
+#define AEC_SUPPRESSOR_USE_SUBBAND_NEAREND_DETECTION \
+	"suppressor:use_subband_nearend_detection"
+#define AEC_SUPPRESSOR_USE_SUBBAND_NEAREND_DETECTION_VALUE 0
+
 #define AEC_SUPPRESSOR_HIGH_BANDS_SUPPRESSION_ENR_THRESHOLD \
 	"suppressor.high_bands_suppression:enr_threshold"
 #define AEC_SUPPRESSOR_HIGH_BANDS_SUPPRESSION_ENR_THRESHOLD_VALUE 1.f
 #define AEC_SUPPRESSOR_HIGH_BANDS_SUPPRESSION_MAX_GAIN_DURING_ECHO \
 	"suppressor.high_bands_suppression:max_gain_during_echo"
 #define AEC_SUPPRESSOR_HIGH_BANDS_SUPPRESSION_MAX_GAIN_DURING_ECHO_VALUE 1.f
+#define AEC_SUPPRESSOR_HIGH_BANDS_SUPPRESSION_ANTI_HOWLING_ACTIVATION_THRESHOLD \
+	"suppressor.high_bands_suppression:anti_howling_activation_threshold"
+#define AEC_SUPPRESSOR_HIGH_BANDS_SUPPRESSION_ANTI_HOWLING_ACTIVATION_THRESHOLD_VALUE \
+	400.f
+#define AEC_SUPPRESSOR_HIGH_BANDS_SUPPRESSION_ANTI_HOWLING_GAIN \
+	"suppressor.high_bands_suppression:anti_howling_gain"
+#define AEC_SUPPRESSOR_HIGH_BANDS_SUPPRESSION_ANTI_HOWLING_GAIN_VALUE 1.f
 
 #define AEC_SUPPRESSOR_FLOOR_FIRST_INCREASE "suppressor:floor_first_increase"
 #define AEC_SUPPRESSOR_FLOOR_FIRST_INCREASE_VALUE 0.00001f
-#define AEC_SUPPRESSOR_ENFORCE_TRANSPARENT "suppressor:enforce_transparent"
-#define AEC_SUPPRESSOR_ENFORCE_TRANSPARENT_VALUE 0
-#define AEC_SUPPRESSOR_ENFORCE_EMPTY_HIGHER_BANDS \
-	"suppressor:enforce_empty_higher_bands"
-#define AEC_SUPPRESSOR_ENFORCE_EMPTY_HIGHER_BANDS_VALUE 0
+
+#define AEC_SUPPRESSOR_CONSERVATIVE_HF_SUPPRESSION \
+	"suppressor:CONSERVATIVE_HF_SUPPRESSION"
+#define AEC_SUPPRESSOR_CONSERVATIVE_HF_SUPPRESSION_VALUE 0
 
 /* Gets the aec config from given config directory. */
 void aec_config_get(dictionary *ini, webrtc::EchoCanceller3Config *config);

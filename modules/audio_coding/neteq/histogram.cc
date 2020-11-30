@@ -8,26 +8,35 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "modules/audio_coding/neteq/histogram.h"
+
 #include <algorithm>
+#include <cstdlib>
 #include <numeric>
 
-#include "modules/audio_coding/neteq/histogram.h"
+#include "absl/types/optional.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/numerics/safe_conversions.h"
 
 namespace webrtc {
 
-Histogram::Histogram(size_t num_buckets, int forget_factor)
+Histogram::Histogram(size_t num_buckets,
+                     int forget_factor,
+                     absl::optional<double> start_forget_weight)
     : buckets_(num_buckets, 0),
       forget_factor_(0),
-      base_forget_factor_(forget_factor) {}
+      base_forget_factor_(forget_factor),
+      add_count_(0),
+      start_forget_weight_(start_forget_weight) {
+  RTC_DCHECK_LT(base_forget_factor_, 1 << 15);
+}
 
 Histogram::~Histogram() {}
 
 // Each element in the vector is first multiplied by the forgetting factor
 // |forget_factor_|. Then the vector element indicated by |iat_packets| is then
 // increased (additive) by 1 - |forget_factor_|. This way, the probability of
-// |iat_packets| is slightly increased, while the sum of the histogram remains
+// |value| is slightly increased, while the sum of the histogram remains
 // constant (=1).
 // Due to inaccuracies in the fixed-point arithmetic, the histogram may no
 // longer sum up to 1 (in Q30) after the update. To correct this, a correction
@@ -36,7 +45,7 @@ Histogram::~Histogram() {}
 // The forgetting factor |forget_factor_| is also updated. When the DelayManager
 // is reset, the factor is set to 0 to facilitate rapid convergence in the
 // beginning. With each update of the histogram, the factor is increased towards
-// the steady-state value |kIatFactor_|.
+// the steady-state value |base_forget_factor_|.
 void Histogram::Add(int value) {
   RTC_DCHECK(value >= 0);
   RTC_DCHECK(value < static_cast<int>(buckets_.size()));
@@ -61,19 +70,38 @@ void Histogram::Add(int value) {
     int flip_sign = vector_sum > 0 ? -1 : 1;
     for (int& bucket : buckets_) {
       // Add/subtract 1/16 of the element, but not more than |vector_sum|.
-      int correction = flip_sign * std::min(abs(vector_sum), bucket >> 4);
+      int correction = flip_sign * std::min(std::abs(vector_sum), bucket >> 4);
       bucket += correction;
       vector_sum += correction;
-      if (abs(vector_sum) == 0) {
+      if (std::abs(vector_sum) == 0) {
         break;
       }
     }
   }
   RTC_DCHECK(vector_sum == 0);  // Verify that the above is correct.
 
+  ++add_count_;
+
   // Update |forget_factor_| (changes only during the first seconds after a
   // reset). The factor converges to |base_forget_factor_|.
-  forget_factor_ += (base_forget_factor_ - forget_factor_ + 3) >> 2;
+  if (start_forget_weight_) {
+    if (forget_factor_ != base_forget_factor_) {
+      int old_forget_factor = forget_factor_;
+      int forget_factor =
+          (1 << 15) * (1 - start_forget_weight_.value() / (add_count_ + 1));
+      forget_factor_ =
+          std::max(0, std::min(base_forget_factor_, forget_factor));
+      // The histogram is updated recursively by forgetting the old histogram
+      // with |forget_factor_| and adding a new sample multiplied by |1 -
+      // forget_factor_|. We need to make sure that the effective weight on the
+      // new sample is no smaller than those on the old samples, i.e., to
+      // satisfy the following DCHECK.
+      RTC_DCHECK_GE((1 << 15) - forget_factor_,
+                    ((1 << 15) - old_forget_factor) * forget_factor_ >> 15);
+    }
+  } else {
+    forget_factor_ += (base_forget_factor_ - forget_factor_ + 3) >> 2;
+  }
 }
 
 int Histogram::Quantile(int probability) {
@@ -88,14 +116,14 @@ int Histogram::Quantile(int probability) {
   int inverse_probability = (1 << 30) - probability;
   size_t index = 0;        // Start from the beginning of |buckets_|.
   int sum = 1 << 30;       // Assign to 1 in Q30.
-  sum -= buckets_[index];  // Ensure that target level is >= 1.
+  sum -= buckets_[index];
 
-  do {
+  while ((sum > inverse_probability) && (index < buckets_.size() - 1)) {
     // Subtract the probabilities one by one until the sum is no longer greater
     // than |inverse_probability|.
     ++index;
     sum -= buckets_[index];
-  } while ((sum > inverse_probability) && (index < buckets_.size() - 1));
+  }
   return static_cast<int>(index);
 }
 
@@ -111,64 +139,11 @@ void Histogram::Reset() {
     bucket = temp_prob << 16;
   }
   forget_factor_ = 0;  // Adapt the histogram faster for the first few packets.
+  add_count_ = 0;
 }
 
 int Histogram::NumBuckets() const {
   return buckets_.size();
-}
-
-void Histogram::Scale(int old_bucket_width, int new_bucket_width) {
-  buckets_ = ScaleBuckets(buckets_, old_bucket_width, new_bucket_width);
-}
-
-std::vector<int> Histogram::ScaleBuckets(const std::vector<int>& buckets,
-                                         int old_bucket_width,
-                                         int new_bucket_width) {
-  RTC_DCHECK_GT(old_bucket_width, 0);
-  RTC_DCHECK_GT(new_bucket_width, 0);
-  RTC_DCHECK_EQ(old_bucket_width % 10, 0);
-  RTC_DCHECK_EQ(new_bucket_width % 10, 0);
-  std::vector<int> new_histogram(buckets.size(), 0);
-  int64_t acc = 0;
-  int time_counter = 0;
-  size_t new_histogram_idx = 0;
-  for (size_t i = 0; i < buckets.size(); i++) {
-    acc += buckets[i];
-    time_counter += old_bucket_width;
-    // The bins should be scaled, to ensure the histogram still sums to one.
-    const int64_t scaled_acc = acc * new_bucket_width / time_counter;
-    int64_t actually_used_acc = 0;
-    while (time_counter >= new_bucket_width) {
-      const int64_t old_histogram_val = new_histogram[new_histogram_idx];
-      new_histogram[new_histogram_idx] =
-          rtc::saturated_cast<int>(old_histogram_val + scaled_acc);
-      actually_used_acc += new_histogram[new_histogram_idx] - old_histogram_val;
-      new_histogram_idx =
-          std::min(new_histogram_idx + 1, new_histogram.size() - 1);
-      time_counter -= new_bucket_width;
-    }
-    // Only subtract the part that was succesfully written to the new histogram.
-    acc -= actually_used_acc;
-  }
-  // If there is anything left in acc (due to rounding errors), add it to the
-  // last bin. If we cannot add everything to the last bin we need to add as
-  // much as possible to the bins after the last bin (this is only possible
-  // when compressing a histogram).
-  while (acc > 0 && new_histogram_idx < new_histogram.size()) {
-    const int64_t old_histogram_val = new_histogram[new_histogram_idx];
-    new_histogram[new_histogram_idx] =
-        rtc::saturated_cast<int>(old_histogram_val + acc);
-    acc -= new_histogram[new_histogram_idx] - old_histogram_val;
-    new_histogram_idx++;
-  }
-  RTC_DCHECK_EQ(buckets.size(), new_histogram.size());
-  if (acc == 0) {
-    // If acc is non-zero, we were not able to add everything to the new
-    // histogram, so this check will not hold.
-    RTC_DCHECK_EQ(accumulate(buckets.begin(), buckets.end(), 0ll),
-                  accumulate(new_histogram.begin(), new_histogram.end(), 0ll));
-  }
-  return new_histogram;
 }
 
 }  // namespace webrtc

@@ -41,39 +41,12 @@ WEBRTC_APM_API void webrtc_apm_dump_configs(
 /* Destroys a webrtc_apm instance. */
 WEBRTC_APM_API void webrtc_apm_destroy(webrtc_apm apm);
 
-/* Processes data in reverse stream. In CRAS use case this is called for
- * output stream data.
- * Args:
- *    ptr - The webrtc_apm to process reverse stream data.
- *    num_channels - Number of channels of the reverse stream.
- *    rate - Frame rate used by reverse stream.
- *    data - Pointer to the data in reverse stream to be processed.
- *    nframes - Number of frames of reverse stream's data.
- */
-WEBRTC_APM_API int webrtc_apm_process_reverse_stream(
-		webrtc_apm ptr,
-		int num_channels, int rate,
-		int16_t *data, int nframes);
-
 /* Processes deinterleaved float data in reverse stream. Expecting data
  * size be 10 ms equivalent of frames. */
 WEBRTC_APM_API int webrtc_apm_process_reverse_stream_f(
 		webrtc_apm ptr,
 		int num_channels, int rate,
 		float *const *data);
-
-/* Processes data in forward stream. In CRAS use case this is called for
- * input stream data.
- * Args:
- *    ptr - The webrtc_apm to process forward stream data.
- *    num_channels - Number of channels of the forward stream.
- *    rate - Frame rate used by forward stream.
- *    data - Pointer to the data in forward stream to be processed.
- *    nframes - Number of frames of forward stream's data.
- */
-WEBRTC_APM_API int webrtc_apm_process_stream(
-		webrtc_apm ptr, int num_channels,
-		int rate, int16_t *data, int nframes);
 
 /* Processes deinterleaved float data in forward stream. Expecting data
  * size be 10 ms equivalent of frames. */

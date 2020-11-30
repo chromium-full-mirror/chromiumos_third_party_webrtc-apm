@@ -26,8 +26,23 @@ absl_cc_library(
   DEPS
     absl::base
     absl::base_internal
+    absl::config
     absl::core_headers
     absl::malloc_internal
+    absl::raw_logging_internal
+)
+
+absl_cc_library(
+  NAME
+    kernel_timeout_internal
+  HDRS
+    "internal/kernel_timeout.h"
+  COPTS
+    ${ABSL_DEFAULT_COPTS}
+  DEPS
+    absl::core_headers
+    absl::raw_logging_internal
+    absl::time
 )
 
 absl_cc_library(
@@ -37,7 +52,6 @@ absl_cc_library(
     "barrier.h"
     "blocking_counter.h"
     "internal/create_thread_identity.h"
-    "internal/kernel_timeout.h"
     "internal/mutex_nonprod.inc"
     "internal/per_thread_sem.h"
     "internal/waiter.h"
@@ -55,15 +69,19 @@ absl_cc_library(
     ${ABSL_DEFAULT_COPTS}
   DEPS
     absl::graphcycles_internal
+    absl::kernel_timeout_internal
+    absl::atomic_hook
     absl::base
     absl::base_internal
     absl::config
     absl::core_headers
     absl::dynamic_annotations
     absl::malloc_internal
+    absl::raw_logging_internal
     absl::stacktrace
     absl::symbolize
     absl::time
+    Threads::Threads
   PUBLIC
 )
 
@@ -102,8 +120,8 @@ absl_cc_test(
     ${ABSL_TEST_COPTS}
   DEPS
     absl::graphcycles_internal
-    absl::base
     absl::core_headers
+    absl::raw_logging_internal
     gmock_main
 )
 
@@ -112,6 +130,8 @@ absl_cc_library(
     thread_pool
   HDRS
     "internal/thread_pool.h"
+  COPTS
+    ${ABSL_DEFAULT_COPTS}
   DEPS
     absl::synchronization
     absl::core_headers
@@ -129,8 +149,10 @@ absl_cc_test(
     absl::synchronization
     absl::thread_pool
     absl::base
+    absl::config
     absl::core_headers
     absl::memory
+    absl::raw_logging_internal
     absl::time
     gmock_main
 )
@@ -158,6 +180,7 @@ absl_cc_library(
   DEPS
     absl::synchronization
     absl::base
+    absl::config
     absl::strings
     absl::time
     gmock
@@ -174,7 +197,6 @@ absl_cc_test(
   DEPS
     absl::per_thread_sem_test_common
     absl::synchronization
-    absl::base
     absl::strings
     absl::time
     gmock_main
@@ -189,7 +211,6 @@ absl_cc_test(
     ${ABSL_TEST_COPTS}
   DEPS
     absl::synchronization
-    absl::base
     absl::core_headers
-    Threads::Threads
+    absl::raw_logging_internal
 )

@@ -8,13 +8,14 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include <algorithm>
+#include "modules/audio_processing/gain_controller2.h"
 
-#include "absl/memory/memory.h"
+#include <algorithm>
+#include <memory>
+
 #include "api/array_view.h"
 #include "modules/audio_processing/agc2/agc2_testing_common.h"
 #include "modules/audio_processing/audio_buffer.h"
-#include "modules/audio_processing/gain_controller2.h"
 #include "modules/audio_processing/test/audio_buffer_tools.h"
 #include "modules/audio_processing/test/bitexactness_tools.h"
 #include "rtc_base/checks.h"
@@ -27,8 +28,7 @@ namespace {
 void SetAudioBufferSamples(float value, AudioBuffer* ab) {
   // Sets all the samples in |ab| to |value|.
   for (size_t k = 0; k < ab->num_channels(); ++k) {
-    std::fill(ab->channels_f()[k], ab->channels_f()[k] + ab->num_frames(),
-              value);
+    std::fill(ab->channels()[k], ab->channels()[k] + ab->num_frames(), value);
   }
 }
 
@@ -37,7 +37,7 @@ float RunAgc2WithConstantInput(GainController2* agc2,
                                size_t num_frames,
                                int sample_rate) {
   const int num_samples = rtc::CheckedDivExact(sample_rate, 100);
-  AudioBuffer ab(num_samples, 1, num_samples, 1, num_samples);
+  AudioBuffer ab(sample_rate, 1, sample_rate, 1, sample_rate, 1);
 
   // Give time to the level estimator to converge.
   for (size_t i = 0; i < num_frames + 1; ++i) {
@@ -46,7 +46,7 @@ float RunAgc2WithConstantInput(GainController2* agc2,
   }
 
   // Return the last sample from the last processed frame.
-  return ab.channels_f()[0][num_samples - 1];
+  return ab.channels()[0][num_samples - 1];
 }
 
 AudioProcessing::Config::GainController2 CreateAgc2FixedDigitalModeConfig(
@@ -62,7 +62,7 @@ AudioProcessing::Config::GainController2 CreateAgc2FixedDigitalModeConfig(
 std::unique_ptr<GainController2> CreateAgc2FixedDigitalMode(
     float fixed_gain_db,
     size_t sample_rate_hz) {
-  auto agc2 = absl::make_unique<GainController2>();
+  auto agc2 = std::make_unique<GainController2>();
   agc2->ApplyConfig(CreateAgc2FixedDigitalModeConfig(fixed_gain_db));
   agc2->Initialize(sample_rate_hz);
   return agc2;
@@ -73,9 +73,10 @@ float GainAfterProcessingFile(GainController2* gain_controller) {
   constexpr size_t kStereo = 2u;
   const StreamConfig capture_config(AudioProcessing::kSampleRate48kHz, kStereo,
                                     false);
-  AudioBuffer ab(capture_config.num_frames(), capture_config.num_channels(),
-                 capture_config.num_frames(), capture_config.num_channels(),
-                 capture_config.num_frames());
+  AudioBuffer ab(capture_config.sample_rate_hz(), capture_config.num_channels(),
+                 capture_config.sample_rate_hz(), capture_config.num_channels(),
+                 capture_config.sample_rate_hz(),
+                 capture_config.num_channels());
   test::InputAudioFile capture_file(
       test::GetApmCaptureTestVectorFileName(AudioProcessing::kSampleRate48kHz));
   std::vector<float> capture_input(capture_config.num_frames() *
@@ -98,41 +99,112 @@ float GainAfterProcessingFile(GainController2* gain_controller) {
   constexpr float sample_value = 1.f;
   SetAudioBufferSamples(sample_value, &ab);
   gain_controller->Process(&ab);
-  return ab.channels_f()[0][0];
+  return ab.channels()[0][0];
 }
 
 }  // namespace
 
-TEST(GainController2, CreateApplyConfig) {
-  // Instances GainController2 and applies different configurations.
-  std::unique_ptr<GainController2> gain_controller2(new GainController2());
-
-  // Check that the default config is valid.
+TEST(GainController2, CheckDefaultConfig) {
   AudioProcessing::Config::GainController2 config;
   EXPECT_TRUE(GainController2::Validate(config));
-  gain_controller2->ApplyConfig(config);
-
-  // Check that attenuation is not allowed.
-  config.fixed_digital.gain_db = -5.f;
-  EXPECT_FALSE(GainController2::Validate(config));
-
-  // Check that valid configurations are applied.
-  for (const float& fixed_gain_db : {0.f, 5.f, 10.f, 40.f}) {
-    config.fixed_digital.gain_db = fixed_gain_db;
-    EXPECT_TRUE(GainController2::Validate(config));
-    gain_controller2->ApplyConfig(config);
-  }
 }
 
-TEST(GainController2, ToString) {
-  // Tests GainController2::ToString(). Only test the enabled property.
+TEST(GainController2, CheckFixedDigitalConfig) {
   AudioProcessing::Config::GainController2 config;
+  // Attenuation is not allowed.
+  config.fixed_digital.gain_db = -5.f;
+  EXPECT_FALSE(GainController2::Validate(config));
+  // No gain is allowed.
+  config.fixed_digital.gain_db = 0.f;
+  EXPECT_TRUE(GainController2::Validate(config));
+  // Positive gain is allowed.
+  config.fixed_digital.gain_db = 15.f;
+  EXPECT_TRUE(GainController2::Validate(config));
+}
 
-  config.enabled = false;
-  EXPECT_EQ("{enabled: false", GainController2::ToString(config).substr(0, 15));
+TEST(GainController2, CheckAdaptiveDigitalVadProbabilityAttackConfig) {
+  AudioProcessing::Config::GainController2 config;
+  // Reject invalid attack.
+  config.adaptive_digital.vad_probability_attack = -123.f;
+  EXPECT_FALSE(GainController2::Validate(config));
+  config.adaptive_digital.vad_probability_attack = 0.f;
+  EXPECT_FALSE(GainController2::Validate(config));
+  config.adaptive_digital.vad_probability_attack = 42.f;
+  EXPECT_FALSE(GainController2::Validate(config));
+  // Accept valid attack.
+  config.adaptive_digital.vad_probability_attack = 0.1f;
+  EXPECT_TRUE(GainController2::Validate(config));
+  config.adaptive_digital.vad_probability_attack = 1.f;
+  EXPECT_TRUE(GainController2::Validate(config));
+}
 
-  config.enabled = true;
-  EXPECT_EQ("{enabled: true", GainController2::ToString(config).substr(0, 14));
+TEST(GainController2,
+     CheckAdaptiveDigitalLevelEstimatorSpeechFramesThresholdConfig) {
+  AudioProcessing::Config::GainController2 config;
+  config.adaptive_digital.level_estimator_adjacent_speech_frames_threshold = 0;
+  EXPECT_FALSE(GainController2::Validate(config));
+  config.adaptive_digital.level_estimator_adjacent_speech_frames_threshold = 1;
+  EXPECT_TRUE(GainController2::Validate(config));
+  config.adaptive_digital.level_estimator_adjacent_speech_frames_threshold = 7;
+  EXPECT_TRUE(GainController2::Validate(config));
+}
+
+TEST(GainController2, CheckAdaptiveDigitalInitialSaturationMarginConfig) {
+  AudioProcessing::Config::GainController2 config;
+  config.adaptive_digital.initial_saturation_margin_db = -1.f;
+  EXPECT_FALSE(GainController2::Validate(config));
+  config.adaptive_digital.initial_saturation_margin_db = 0.f;
+  EXPECT_TRUE(GainController2::Validate(config));
+  config.adaptive_digital.initial_saturation_margin_db = 50.f;
+  EXPECT_TRUE(GainController2::Validate(config));
+}
+
+TEST(GainController2, CheckAdaptiveDigitalExtraSaturationMarginConfig) {
+  AudioProcessing::Config::GainController2 config;
+  config.adaptive_digital.extra_saturation_margin_db = -1.f;
+  EXPECT_FALSE(GainController2::Validate(config));
+  config.adaptive_digital.extra_saturation_margin_db = 0.f;
+  EXPECT_TRUE(GainController2::Validate(config));
+  config.adaptive_digital.extra_saturation_margin_db = 50.f;
+  EXPECT_TRUE(GainController2::Validate(config));
+}
+
+TEST(GainController2,
+     CheckAdaptiveDigitalGainApplierSpeechFramesThresholdConfig) {
+  AudioProcessing::Config::GainController2 config;
+  config.adaptive_digital.gain_applier_adjacent_speech_frames_threshold = 0;
+  EXPECT_FALSE(GainController2::Validate(config));
+  config.adaptive_digital.gain_applier_adjacent_speech_frames_threshold = 1;
+  EXPECT_TRUE(GainController2::Validate(config));
+  config.adaptive_digital.gain_applier_adjacent_speech_frames_threshold = 7;
+  EXPECT_TRUE(GainController2::Validate(config));
+}
+
+TEST(GainController2, CheckAdaptiveDigitalMaxGainChangeSpeedConfig) {
+  AudioProcessing::Config::GainController2 config;
+  config.adaptive_digital.max_gain_change_db_per_second = -1.f;
+  EXPECT_FALSE(GainController2::Validate(config));
+  config.adaptive_digital.max_gain_change_db_per_second = 0.f;
+  EXPECT_FALSE(GainController2::Validate(config));
+  config.adaptive_digital.max_gain_change_db_per_second = 5.f;
+  EXPECT_TRUE(GainController2::Validate(config));
+}
+
+TEST(GainController2, CheckAdaptiveDigitalMaxOutputNoiseLevelConfig) {
+  AudioProcessing::Config::GainController2 config;
+  config.adaptive_digital.max_output_noise_level_dbfs = 5.f;
+  EXPECT_FALSE(GainController2::Validate(config));
+  config.adaptive_digital.max_output_noise_level_dbfs = 0.f;
+  EXPECT_TRUE(GainController2::Validate(config));
+  config.adaptive_digital.max_output_noise_level_dbfs = -5.f;
+  EXPECT_TRUE(GainController2::Validate(config));
+}
+
+// Checks that the default config is applied.
+TEST(GainController2, ApplyDefaultConfig) {
+  auto gain_controller2 = std::make_unique<GainController2>();
+  AudioProcessing::Config::GainController2 config;
+  gain_controller2->ApplyConfig(config);
 }
 
 TEST(GainController2FixedDigital, GainShouldChangeOnSetGain) {
@@ -202,8 +274,8 @@ struct FixedDigitalTestParams {
 };
 
 class FixedDigitalTest
-    : public testing::Test,
-      public testing::WithParamInterface<FixedDigitalTestParams> {};
+    : public ::testing::Test,
+      public ::testing::WithParamInterface<FixedDigitalTestParams> {};
 
 TEST_P(FixedDigitalTest, CheckSaturationBehaviorWithLimiter) {
   const float kInputLevel = 32767.f;

@@ -9,6 +9,7 @@
  */
 
 #include "audio/utility/audio_frame_operations.h"
+
 #include "rtc_base/checks.h"
 #include "test/gtest.h"
 
@@ -25,6 +26,8 @@ class AudioFrameOperationsTest : public ::testing::Test {
 
   AudioFrame frame_;
 };
+
+class AudioFrameOperationsDeathTest : public AudioFrameOperationsTest {};
 
 void SetFrameData(int16_t ch1,
                   int16_t ch2,
@@ -104,7 +107,7 @@ void VerifyFrameDataBounds(const AudioFrame& frame,
 }
 
 #if RTC_DCHECK_IS_ON && GTEST_HAS_DEATH_TEST && !defined(WEBRTC_ANDROID)
-TEST_F(AudioFrameOperationsTest, MonoToStereoFailsWithBadParameters) {
+TEST_F(AudioFrameOperationsDeathTest, MonoToStereoFailsWithBadParameters) {
   EXPECT_DEATH(AudioFrameOperations::UpmixChannels(2, &frame_), "");
   frame_.samples_per_channel_ = AudioFrame::kMaxDataSizeSamples;
   frame_.num_channels_ = 1;
@@ -135,7 +138,7 @@ TEST_F(AudioFrameOperationsTest, MonoToStereoMuted) {
 }
 
 #if RTC_DCHECK_IS_ON && GTEST_HAS_DEATH_TEST && !defined(WEBRTC_ANDROID)
-TEST_F(AudioFrameOperationsTest, StereoToMonoFailsWithBadParameters) {
+TEST_F(AudioFrameOperationsDeathTest, StereoToMonoFailsWithBadParameters) {
   frame_.num_channels_ = 1;
   EXPECT_DEATH(AudioFrameOperations::DownmixChannels(1, &frame_), "");
 }

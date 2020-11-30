@@ -9,15 +9,21 @@
  */
 
 #include "rtc_base/task_utils/repeating_task.h"
+
+#include "absl/memory/memory.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/task_utils/to_queued_task.h"
 #include "rtc_base/time_utils.h"
 
 namespace webrtc {
 namespace webrtc_repeating_task_impl {
-RepeatingTaskBase::RepeatingTaskBase(rtc::TaskQueue* task_queue,
-                                     TimeDelta first_delay)
+
+RepeatingTaskBase::RepeatingTaskBase(TaskQueueBase* task_queue,
+                                     TimeDelta first_delay,
+                                     Clock* clock)
     : task_queue_(task_queue),
-      next_run_time_(Timestamp::us(rtc::TimeMicros()) + first_delay) {}
+      clock_(clock),
+      next_run_time_(clock_->CurrentTime() + first_delay) {}
 
 RepeatingTaskBase::~RepeatingTaskBase() = default;
 
@@ -28,14 +34,14 @@ bool RepeatingTaskBase::Run() {
     return true;
 
   TimeDelta delay = RunClosure();
-  RTC_DCHECK(delay.IsFinite());
 
   // The closure might have stopped this task, in which case we return true to
   // destruct this object.
   if (next_run_time_.IsPlusInfinity())
     return true;
 
-  TimeDelta lost_time = Timestamp::us(rtc::TimeMicros()) - next_run_time_;
+  RTC_DCHECK(delay.IsFinite());
+  TimeDelta lost_time = clock_->CurrentTime() - next_run_time_;
   next_run_time_ += delay;
   delay -= lost_time;
   delay = std::max(delay, TimeDelta::Zero());
@@ -48,42 +54,21 @@ bool RepeatingTaskBase::Run() {
 }
 
 void RepeatingTaskBase::Stop() {
+  RTC_DCHECK_RUN_ON(task_queue_);
   RTC_DCHECK(next_run_time_.IsFinite());
   next_run_time_ = Timestamp::PlusInfinity();
 }
 
-void RepeatingTaskBase::PostStop() {
-  if (task_queue_->IsCurrent()) {
-    RTC_DLOG(LS_INFO) << "Using PostStop() from the task queue running the "
-                         "repeated task. Consider calling Stop() instead.";
-  }
-  task_queue_->PostTask([this] {
-    RTC_DCHECK_RUN_ON(task_queue_);
-    Stop();
-  });
-}
-
 }  // namespace webrtc_repeating_task_impl
-RepeatingTaskHandle::RepeatingTaskHandle() {
-  sequence_checker_.Detach();
-}
-RepeatingTaskHandle::~RepeatingTaskHandle() {
-  sequence_checker_.Detach();
-}
 
 RepeatingTaskHandle::RepeatingTaskHandle(RepeatingTaskHandle&& other)
     : repeating_task_(other.repeating_task_) {
-  RTC_DCHECK_RUN_ON(&sequence_checker_);
   other.repeating_task_ = nullptr;
 }
 
 RepeatingTaskHandle& RepeatingTaskHandle::operator=(
     RepeatingTaskHandle&& other) {
-  RTC_DCHECK_RUN_ON(&other.sequence_checker_);
-  {
-    RTC_DCHECK_RUN_ON(&sequence_checker_);
-    repeating_task_ = other.repeating_task_;
-  }
+  repeating_task_ = other.repeating_task_;
   other.repeating_task_ = nullptr;
   return *this;
 }
@@ -93,24 +78,13 @@ RepeatingTaskHandle::RepeatingTaskHandle(
     : repeating_task_(repeating_task) {}
 
 void RepeatingTaskHandle::Stop() {
-  RTC_DCHECK_RUN_ON(&sequence_checker_);
   if (repeating_task_) {
-    RTC_DCHECK_RUN_ON(repeating_task_->task_queue_);
     repeating_task_->Stop();
     repeating_task_ = nullptr;
   }
 }
 
-void RepeatingTaskHandle::PostStop() {
-  RTC_DCHECK_RUN_ON(&sequence_checker_);
-  if (repeating_task_) {
-    repeating_task_->PostStop();
-    repeating_task_ = nullptr;
-  }
-}
-
 bool RepeatingTaskHandle::Running() const {
-  RTC_DCHECK_RUN_ON(&sequence_checker_);
   return repeating_task_ != nullptr;
 }
 

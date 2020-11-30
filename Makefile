@@ -22,8 +22,7 @@ webrtc_apm_CXX_OBJECTS = \
 CXX_LIBRARY(libwebrtc_apm.so): \
 	CPPFLAGS += -I.
 
-CXX_LIBRARY(libwebrtc_apm.so): \
-	$(webrtc_apm_CXX_OBJECTS) \
+libwebrtc_apm_CXX_OBJECTS = \
 	libaudio_processing \
 	rtc_base/librtc_base \
 	common_audio/libcommon_audio \
@@ -31,12 +30,24 @@ CXX_LIBRARY(libwebrtc_apm.so): \
 	modules/audio_coding/libaudio_coding \
 	modules/audio_processing/libaudioproc_debug_proto \
 	absl \
-	cras-config
+	cras-config \
+	aec3
+
+ifeq (${USE_SSE2},1)
+libwebrtc_apm_CXX_OBJECTS += \
+	common_audio_avx2 \
+	aec3_avx2
+endif
+
+CXX_LIBRARY(libwebrtc_apm.so): \
+	$(webrtc_apm_CXX_OBJECTS) \
+	$(libwebrtc_apm_CXX_OBJECTS)
 
 CXX_LIBRARY(libwebrtc_apm.so): CPPFLAGS += \
 	$(call get_pc_cflags,$(webrtc_apm_PC_DEPS))
 
 CXX_LIBRARY(libwebrtc_apm.so): LDLIBS += \
+	aec3.pic.a \
 	libaudio_processing.pic.a \
 	common_audio/libcommon_audio.pic.a \
 	system_wrappers/source/libsystem_wrappers.pic.a \
@@ -47,5 +58,11 @@ CXX_LIBRARY(libwebrtc_apm.so): LDLIBS += \
 	cras-config.pic.a \
 	$(call get_pc_libs,$(webrtc_apm_PC_DEPS)) \
 	-liniparser -pthread
+
+ifeq (${USE_SSE2},1)
+CXX_LIBRARY(libwebrtc_apm.so): LDLIBS += \
+	aec3_avx2.pic.a \
+	common_audio_avx2.pic.a
+endif
 
 all: CXX_LIBRARY(libwebrtc_apm.so)

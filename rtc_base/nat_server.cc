@@ -8,11 +8,12 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "rtc_base/nat_server.h"
+
 #include <memory>
 
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
-#include "rtc_base/nat_server.h"
 #include "rtc_base/nat_socket_factory.h"
 #include "rtc_base/socket_adapters.h"
 
@@ -173,7 +174,7 @@ void NATServer::OnInternalUDPPacket(AsyncPacketSocket* socket,
   RTC_DCHECK(iter != int_map_->end());
 
   // Allow the destination to send packets back to the source.
-  iter->second->WhitelistInsert(dest_addr);
+  iter->second->AllowlistInsert(dest_addr);
 
   // Send the packet to its intended destination.
   rtc::PacketOptions options;
@@ -226,29 +227,29 @@ void NATServer::Translate(const SocketAddressPair& route) {
 
 bool NATServer::ShouldFilterOut(TransEntry* entry,
                                 const SocketAddress& ext_addr) {
-  return entry->WhitelistContains(ext_addr);
+  return entry->AllowlistContains(ext_addr);
 }
 
 NATServer::TransEntry::TransEntry(const SocketAddressPair& r,
                                   AsyncUDPSocket* s,
                                   NAT* nat)
     : route(r), socket(s) {
-  whitelist = new AddressSet(AddrCmp(nat));
+  allowlist = new AddressSet(AddrCmp(nat));
 }
 
 NATServer::TransEntry::~TransEntry() {
-  delete whitelist;
+  delete allowlist;
   delete socket;
 }
 
-void NATServer::TransEntry::WhitelistInsert(const SocketAddress& addr) {
-  CritScope cs(&crit_);
-  whitelist->insert(addr);
+void NATServer::TransEntry::AllowlistInsert(const SocketAddress& addr) {
+  webrtc::MutexLock lock(&mutex_);
+  allowlist->insert(addr);
 }
 
-bool NATServer::TransEntry::WhitelistContains(const SocketAddress& ext_addr) {
-  CritScope cs(&crit_);
-  return whitelist->find(ext_addr) == whitelist->end();
+bool NATServer::TransEntry::AllowlistContains(const SocketAddress& ext_addr) {
+  webrtc::MutexLock lock(&mutex_);
+  return allowlist->find(ext_addr) == allowlist->end();
 }
 
 }  // namespace rtc

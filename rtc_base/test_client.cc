@@ -11,9 +11,10 @@
 #include "rtc_base/test_client.h"
 
 #include <string.h>
+
+#include <memory>
 #include <utility>
 
-#include "absl/memory/memory.h"
 #include "rtc_base/gunit.h"
 #include "rtc_base/thread.h"
 #include "rtc_base/time_utils.h"
@@ -28,7 +29,7 @@ TestClient::TestClient(std::unique_ptr<AsyncPacketSocket> socket)
     : TestClient(std::move(socket), nullptr) {}
 
 TestClient::TestClient(std::unique_ptr<AsyncPacketSocket> socket,
-                       FakeClock* fake_clock)
+                       ThreadProcessingFakeClock* fake_clock)
     : fake_clock_(fake_clock),
       socket_(std::move(socket)),
       prev_packet_timestamp_(-1) {
@@ -74,7 +75,7 @@ std::unique_ptr<TestClient::Packet> TestClient::NextPacket(int timeout_ms) {
   int64_t end = TimeAfter(timeout_ms);
   while (TimeUntil(end) > 0) {
     {
-      CritScope cs(&crit_);
+      webrtc::MutexLock lock(&mutex_);
       if (packets_.size() != 0) {
         break;
       }
@@ -84,7 +85,7 @@ std::unique_ptr<TestClient::Packet> TestClient::NextPacket(int timeout_ms) {
 
   // Return the first packet placed in the queue.
   std::unique_ptr<Packet> packet;
-  CritScope cs(&crit_);
+  webrtc::MutexLock lock(&mutex_);
   if (packets_.size() > 0) {
     packet = std::move(packets_.front());
     packets_.erase(packets_.begin());
@@ -148,9 +149,9 @@ void TestClient::OnPacket(AsyncPacketSocket* socket,
                           size_t size,
                           const SocketAddress& remote_addr,
                           const int64_t& packet_time_us) {
-  CritScope cs(&crit_);
+  webrtc::MutexLock lock(&mutex_);
   packets_.push_back(
-      absl::make_unique<Packet>(remote_addr, buf, size, packet_time_us));
+      std::make_unique<Packet>(remote_addr, buf, size, packet_time_us));
 }
 
 void TestClient::OnReadyToSend(AsyncPacketSocket* socket) {

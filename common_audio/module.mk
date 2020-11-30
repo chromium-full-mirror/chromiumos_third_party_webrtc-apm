@@ -4,6 +4,19 @@
 
 include common.mk
 
+common_audio_avx2_CXX_OBJECTS = \
+	common_audio/fir_filter_avx2.o \
+	common_audio/resampler/sinc_resampler_avx2.o
+
+CXX_STATIC_LIBRARY(common_audio_avx2.pic.a): \
+	CPPFLAGS += -DWEBRTC_POSIX \
+		-mavx2 -mfma
+
+CXX_STATIC_LIBRARY(common_audio_avx2.pic.a): \
+	$(common_audio_avx2_CXX_OBJECTS)
+
+common_audio_avx2: CXX_STATIC_LIBRARY(common_audio_avx2.pic.a)
+
 common_audio_CXX_OBJECTS = \
 	common_audio/audio_converter.o \
 	common_audio/audio_util.o \
@@ -11,7 +24,6 @@ common_audio_CXX_OBJECTS = \
 	common_audio/real_fourier.o \
 	common_audio/real_fourier_ooura.o \
 	common_audio/smoothing_filter.o \
-	common_audio/sparse_fir_filter.o \
 	common_audio/wav_file.o \
 	common_audio/wav_header.o \
 	common_audio/window_generator.o \
@@ -29,7 +41,7 @@ common_audio_cc_CXX_OBJECTS = \
 # TODO(hychao): figure out if common_audio/real_fourier_openmax.o
 # is needed. Build it requires linking openmax dl library.
 common_audio_c_C_OBJECTS = \
-	common_audio/third_party/fft4g/fft4g.o \
+	common_audio/third_party/ooura/fft_size_256/fft4g.o \
 	common_audio/ring_buffer.o \
 	common_audio/signal_processing/auto_corr_to_refl_coef.o \
 	common_audio/signal_processing/auto_correlation.o \
@@ -92,6 +104,7 @@ fir_filter_factory_CXX_OBJECTS = \
 
 CXX_STATIC_LIBRARY(common_audio/libcommon_audio.pic.a): \
 	CPPFLAGS += -DWEBRTC_POSIX
+
 CXX_STATIC_LIBRARY(common_audio/libcommon_audio.pic.a): \
 	$(common_audio_c_C_OBJECTS) \
 	$(common_audio_cc_CXX_OBJECTS) \

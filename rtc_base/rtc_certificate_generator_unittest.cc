@@ -67,13 +67,13 @@ class RTCCertificateGeneratorFixture : public RTCCertificateGeneratorCallback {
   bool generate_async_completed_;
 };
 
-class RTCCertificateGeneratorTest : public testing::Test {
+class RTCCertificateGeneratorTest : public ::testing::Test {
  public:
   RTCCertificateGeneratorTest()
       : fixture_(new RefCountedObject<RTCCertificateGeneratorFixture>()) {}
 
  protected:
-  static const int kGenerationTimeoutMs = 10000;
+  static constexpr int kGenerationTimeoutMs = 10000;
 
   scoped_refptr<RTCCertificateGeneratorFixture> fixture_;
 };

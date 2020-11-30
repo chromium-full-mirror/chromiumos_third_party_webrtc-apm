@@ -11,6 +11,7 @@
 #include "rtc_base/win32_socket_server.h"
 
 #include <ws2tcpip.h>  // NOLINT
+
 #include <algorithm>
 
 #include "rtc_base/byte_order.h"
@@ -666,12 +667,12 @@ void Win32Socket::OnDnsNotify(HANDLE task, int error) {
 ///////////////////////////////////////////////////////////////////////////////
 
 static UINT s_wm_wakeup_id = 0;
-const TCHAR Win32SocketServer::kWindowName[] = L"libjingle Message Window";
+const wchar_t Win32SocketServer::kWindowName[] = L"libjingle Message Window";
 
 Win32SocketServer::Win32SocketServer()
     : wnd_(this), posted_(false), hdlg_(nullptr) {
   if (s_wm_wakeup_id == 0)
-    s_wm_wakeup_id = RegisterWindowMessage(L"WM_WAKEUP");
+    s_wm_wakeup_id = RegisterWindowMessageW(L"WM_WAKEUP");
   if (!wnd_.Create(nullptr, kWindowName, 0, 0, 0, 0, 0, 0)) {
     RTC_LOG_GLE(LS_ERROR) << "Failed to create message window.";
   }
@@ -697,7 +698,7 @@ AsyncSocket* Win32SocketServer::CreateAsyncSocket(int family, int type) {
   return nullptr;
 }
 
-void Win32SocketServer::SetMessageQueue(MessageQueue* queue) {
+void Win32SocketServer::SetMessageQueue(Thread* queue) {
   message_queue_ = queue;
 }
 
@@ -732,7 +733,7 @@ bool Win32SocketServer::Wait(int cms, bool process_io) {
     MSG msg;
     b = GetMessage(&msg, nullptr, s_wm_wakeup_id, s_wm_wakeup_id);
     {
-      CritScope scope(&cs_);
+      webrtc::MutexLock lock(&mutex_);
       posted_ = false;
     }
   } else {
@@ -746,7 +747,7 @@ void Win32SocketServer::WakeUp() {
   if (wnd_.handle()) {
     // Set the "message pending" flag, if not already set.
     {
-      CritScope scope(&cs_);
+      webrtc::MutexLock lock(&mutex_);
       if (posted_)
         return;
       posted_ = true;
@@ -759,7 +760,7 @@ void Win32SocketServer::WakeUp() {
 void Win32SocketServer::Pump() {
   // Clear the "message pending" flag.
   {
-    CritScope scope(&cs_);
+    webrtc::MutexLock lock(&mutex_);
     posted_ = false;
   }
 

@@ -14,7 +14,6 @@
 #include <sys/time.h>
 #if defined(WEBRTC_MAC)
 #include <mach/mach_time.h>
-#include "rtc_base/numerics/safe_conversions.h"
 #endif
 #endif
 
@@ -29,6 +28,7 @@
 #endif
 
 #include "rtc_base/checks.h"
+#include "rtc_base/numerics/safe_conversions.h"
 #include "rtc_base/time_utils.h"
 
 namespace rtc {
@@ -247,7 +247,7 @@ int64_t TimestampWrapAroundHandler::Unwrap(uint32_t ts) {
       ++num_wrap_;
   } else if ((ts - last_ts_) > 0xf0000000) {
     // Backwards wrap. Unwrap with last wrap count and don't update last_ts_.
-    return ts + ((num_wrap_ - 1) << 32);
+    return ts + (num_wrap_ - 1) * (int64_t{1} << 32);
   }
 
   last_ts_ = ts;

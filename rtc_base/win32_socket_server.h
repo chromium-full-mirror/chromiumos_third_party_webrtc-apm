@@ -13,11 +13,10 @@
 
 #if defined(WEBRTC_WIN)
 #include "rtc_base/async_socket.h"
-#include "rtc_base/critical_section.h"
-#include "rtc_base/message_queue.h"
 #include "rtc_base/socket.h"
 #include "rtc_base/socket_factory.h"
 #include "rtc_base/socket_server.h"
+#include "rtc_base/synchronization/mutex.h"
 #include "rtc_base/thread.h"
 #include "rtc_base/win32_window.h"
 
@@ -103,7 +102,7 @@ class Win32SocketServer : public SocketServer {
   Socket* CreateSocket(int family, int type) override;
   AsyncSocket* CreateAsyncSocket(int family, int type) override;
 
-  void SetMessageQueue(MessageQueue* queue) override;
+  void SetMessageQueue(Thread* queue) override;
   bool Wait(int cms, bool process_io) override;
   void WakeUp() override;
 
@@ -121,10 +120,10 @@ class Win32SocketServer : public SocketServer {
     Win32SocketServer* ss_;
   };
 
-  static const TCHAR kWindowName[];
-  MessageQueue* message_queue_;
+  static const wchar_t kWindowName[];
+  Thread* message_queue_;
   MessageWindow wnd_;
-  CriticalSection cs_;
+  webrtc::Mutex mutex_;
   bool posted_;
   HWND hdlg_;
 };

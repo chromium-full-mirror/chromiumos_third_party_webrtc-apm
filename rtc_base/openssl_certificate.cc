@@ -20,7 +20,8 @@
 #include <openssl/pem.h>
 #include <time.h>
 
-#include "absl/memory/memory.h"
+#include <memory>
+
 #include "rtc_base/checks.h"
 #include "rtc_base/helpers.h"
 #include "rtc_base/logging.h"
@@ -138,7 +139,7 @@ std::unique_ptr<OpenSSLCertificate> OpenSSLCertificate::Generate(
 #if !defined(NDEBUG)
   PrintCert(x509);
 #endif
-  auto ret = absl::make_unique<OpenSSLCertificate>(x509);
+  auto ret = std::make_unique<OpenSSLCertificate>(x509);
   X509_free(x509);
   return ret;
 }
@@ -158,7 +159,7 @@ std::unique_ptr<OpenSSLCertificate> OpenSSLCertificate::FromPEMString(
   if (!x509) {
     return nullptr;
   }
-  auto ret = absl::make_unique<OpenSSLCertificate>(x509);
+  auto ret = std::make_unique<OpenSSLCertificate>(x509);
   X509_free(x509);
   return ret;
 }
@@ -238,18 +239,13 @@ OpenSSLCertificate::~OpenSSLCertificate() {
 }
 
 std::unique_ptr<SSLCertificate> OpenSSLCertificate::Clone() const {
-  return absl::make_unique<OpenSSLCertificate>(x509_);
+  return std::make_unique<OpenSSLCertificate>(x509_);
 }
 
 std::string OpenSSLCertificate::ToPEMString() const {
   BIO* bio = BIO_new(BIO_s_mem());
-  if (!bio) {
-    FATAL() << "Unreachable code.";
-  }
-  if (!PEM_write_bio_X509(bio, x509_)) {
-    BIO_free(bio);
-    FATAL() << "Unreachable code.";
-  }
+  RTC_CHECK(bio);
+  RTC_CHECK(PEM_write_bio_X509(bio, x509_));
   BIO_write(bio, "\0", 1);
   char* buffer;
   BIO_get_mem_data(bio, &buffer);
@@ -263,13 +259,8 @@ void OpenSSLCertificate::ToDER(Buffer* der_buffer) const {
   der_buffer->SetSize(0);
   // Calculates the DER representation of the certificate, from scratch.
   BIO* bio = BIO_new(BIO_s_mem());
-  if (!bio) {
-    FATAL() << "Unreachable code.";
-  }
-  if (!i2d_X509_bio(bio, x509_)) {
-    BIO_free(bio);
-    FATAL() << "Unreachable code.";
-  }
+  RTC_CHECK(bio);
+  RTC_CHECK(i2d_X509_bio(bio, x509_));
   char* data = nullptr;
   size_t length = BIO_get_mem_data(bio, &data);
   der_buffer->SetData(data, length);

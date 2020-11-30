@@ -13,9 +13,10 @@
 #include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <algorithm>
+
 #include <string>
 
+#include "absl/algorithm/container.h"
 #include "rtc_base/async_socket.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
@@ -162,19 +163,19 @@ void FirewallSocketServer::AddRule(bool allow,
   r.p = p;
   r.src = src;
   r.dst = dst;
-  CritScope scope(&crit_);
+  webrtc::MutexLock scope(&mutex_);
   rules_.push_back(r);
 }
 
 void FirewallSocketServer::ClearRules() {
-  CritScope scope(&crit_);
+  webrtc::MutexLock scope(&mutex_);
   rules_.clear();
 }
 
 bool FirewallSocketServer::Check(FirewallProtocol p,
                                  const SocketAddress& src,
                                  const SocketAddress& dst) {
-  CritScope scope(&crit_);
+  webrtc::MutexLock scope(&mutex_);
   for (size_t i = 0; i < rules_.size(); ++i) {
     const Rule& r = rules_[i];
     if ((r.p != p) && (r.p != FP_ANY))
@@ -198,8 +199,7 @@ void FirewallSocketServer::SetUnbindableIps(
 }
 
 bool FirewallSocketServer::IsBindableIp(const rtc::IPAddress& ip) {
-  return std::find(unbindable_ips_.begin(), unbindable_ips_.end(), ip) ==
-         unbindable_ips_.end();
+  return !absl::c_linear_search(unbindable_ips_, ip);
 }
 
 Socket* FirewallSocketServer::CreateSocket(int family, int type) {
@@ -210,7 +210,7 @@ AsyncSocket* FirewallSocketServer::CreateAsyncSocket(int family, int type) {
   return WrapSocket(server_->CreateAsyncSocket(family, type), type);
 }
 
-void FirewallSocketServer::SetMessageQueue(MessageQueue* queue) {
+void FirewallSocketServer::SetMessageQueue(Thread* queue) {
   server_->SetMessageQueue(queue);
 }
 
@@ -239,12 +239,12 @@ FirewallManager::~FirewallManager() {
 }
 
 void FirewallManager::AddServer(FirewallSocketServer* server) {
-  CritScope scope(&crit_);
+  webrtc::MutexLock scope(&mutex_);
   servers_.push_back(server);
 }
 
 void FirewallManager::RemoveServer(FirewallSocketServer* server) {
-  CritScope scope(&crit_);
+  webrtc::MutexLock scope(&mutex_);
   servers_.erase(std::remove(servers_.begin(), servers_.end(), server),
                  servers_.end());
 }
@@ -253,7 +253,7 @@ void FirewallManager::AddRule(bool allow,
                               FirewallProtocol p,
                               FirewallDirection d,
                               const SocketAddress& addr) {
-  CritScope scope(&crit_);
+  webrtc::MutexLock scope(&mutex_);
   for (std::vector<FirewallSocketServer*>::const_iterator it = servers_.begin();
        it != servers_.end(); ++it) {
     (*it)->AddRule(allow, p, d, addr);
@@ -261,7 +261,7 @@ void FirewallManager::AddRule(bool allow,
 }
 
 void FirewallManager::ClearRules() {
-  CritScope scope(&crit_);
+  webrtc::MutexLock scope(&mutex_);
   for (std::vector<FirewallSocketServer*>::const_iterator it = servers_.begin();
        it != servers_.end(); ++it) {
     (*it)->ClearRules();
