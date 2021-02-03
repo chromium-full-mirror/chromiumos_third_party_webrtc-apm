@@ -103,7 +103,6 @@ agc2_CXX_OBJECTS = \
 	modules/audio_processing/agc2/vad_with_level.o \
 	modules/audio_processing/agc2/vector_float_frame.o \
 	modules/audio_processing/agc2/rnn_vad/auto_correlation.o \
-	modules/audio_processing/agc2/rnn_vad/common.o \
 	modules/audio_processing/agc2/rnn_vad/features_extraction.o \
 	modules/audio_processing/agc2/rnn_vad/lp_residual.o \
 	modules/audio_processing/agc2/rnn_vad/pitch_search.o \

@@ -120,6 +120,8 @@ void aec_config_get(dictionary *ini, webrtc::EchoCanceller3Config *config)
 		AEC_GET_INT(ini, FILTER, CONFIG_CHANGE_DURATION_BLOCKS);
 	config->filter.initial_state_seconds =
 		AEC_GET_FLOAT(ini, FILTER, INITIAL_STATE_SECONDS);
+	config->filter.coarse_reset_hangover_blocks =
+		AEC_GET_INT(ini, FILTER, COARSE_RESET_HANGOVER_BLOCKS);;
 	config->filter.conservative_initial_phase =
 		AEC_GET_INT(ini, FILTER, CONSERVATIVE_INITIAL_PHASE);
 	config->filter.enable_coarse_filter_output_usage =
@@ -402,6 +404,9 @@ void aec_config_dump(dictionary *ini)
 			config.filter.config_change_duration_blocks);
 	syslog(LOG_ERR, "    initial_state_seconds %f",
 			config.filter.initial_state_seconds);
+
+	syslog(LOG_ERR, "    coarse_reset_hangover_blocks %d",
+			config.filter.coarse_reset_hangover_blocks);
 	syslog(LOG_ERR, "    conservative_initial_phase %d",
 			config.filter.conservative_initial_phase);
 	syslog(LOG_ERR, "    enable_coarse_filter_output_usage %d",

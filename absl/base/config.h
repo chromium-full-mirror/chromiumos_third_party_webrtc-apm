@@ -364,7 +364,7 @@ static_assert(ABSL_INTERNAL_INLINE_NAMESPACE_STR[0] != 'h' ||
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) ||   \
     defined(__ros__) || defined(__native_client__) || defined(__asmjs__) || \
     defined(__wasm__) || defined(__Fuchsia__) || defined(__sun) || \
-    defined(__ASYLO__)
+    defined(__ASYLO__) || defined(__myriad2__)
 #define ABSL_HAVE_MMAP 1
 #endif
 
@@ -474,9 +474,9 @@ static_assert(ABSL_INTERNAL_INLINE_NAMESPACE_STR[0] != 'h' ||
   (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) && \
    __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ < 120000) || \
   (defined(__ENVIRONMENT_WATCH_OS_VERSION_MIN_REQUIRED__) && \
-   __ENVIRONMENT_WATCH_OS_VERSION_MIN_REQUIRED__ < 120000) || \
+   __ENVIRONMENT_WATCH_OS_VERSION_MIN_REQUIRED__ < 50000) || \
   (defined(__ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__) && \
-   __ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__ < 50000))
+   __ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__ < 120000))
 #define ABSL_INTERNAL_APPLE_CXX17_TYPES_UNAVAILABLE 1
 #else
 #define ABSL_INTERNAL_APPLE_CXX17_TYPES_UNAVAILABLE 0

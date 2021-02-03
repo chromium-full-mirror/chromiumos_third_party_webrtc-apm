@@ -76,6 +76,15 @@
 #define ADAPTIVE_DIGITAL_MAX_OUTPUT_NOISE_LEVEL_DBFS \
 	"apm:adaptive_digital_max_output_noise_level_dbfs"
 #define ADAPTIVE_DIGITAL_MAX_OUTPUT_NOISE_LEVEL_DBFS_VALUE -50.f
+#define ADAPTIVE_DIGITAL_SSE2_ALLOWED \
+	"apm:adaptive_digital_sse2_allowed"
+#define ADAPTIVE_DIGITAL_SSE2_ALLOWED_VALUE 1
+#define ADAPTIVE_DIGITAL_AVX2_ALLOWED \
+	"apm:adaptive_digital_avx2_allowed"
+#define ADAPTIVE_DIGITAL_AVX2_ALLOWED_VALUE 1
+#define ADAPTIVE_DIGITAL_NEON_ALLOWED \
+	"apm:adaptive_digital_neon_allowed"
+#define ADAPTIVE_DIGITAL_NEON_ALLOWED_VALUE 1
 
 #define APM_GAIN_CONTROL_COMPRESSION_GAIN_DB "apm:gain_control_compression_gain_db"
 #define APM_GAIN_CONTROL_COMPRESSION_GAIN_DB_VALUE 9

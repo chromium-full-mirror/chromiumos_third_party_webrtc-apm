@@ -174,6 +174,12 @@ void apm_config_dump(dictionary *ini)
 		APM_GET_INT(ini, ADAPTIVE_DIGITAL_LEVEL_ESTIMATOR));
 	syslog(LOG_ERR, "adaptive_digital_use_saturation_protector %d",
 		APM_GET_INT(ini, ADAPTIVE_DIGITAL_USE_SATURATION_PROTECTOR));
+	syslog(LOG_ERR, "adaptive_digital_sse2_allowed %d",
+		APM_GET_INT(ini, ADAPTIVE_DIGITAL_SSE2_ALLOWED));
+	syslog(LOG_ERR, "adaptive_digital_avx2_allowed %d",
+		APM_GET_INT(ini, ADAPTIVE_DIGITAL_AVX2_ALLOWED));
+	syslog(LOG_ERR, "adaptive_digital_neon_allowed %d",
+		APM_GET_INT(ini, ADAPTIVE_DIGITAL_NEON_ALLOWED));
 	syslog(LOG_ERR, "gain_controller2_fixed_digital_gain_db %f",
 		APM_GET_FLOAT(ini, APM_GAIN_CONTROLLER2_FIXED_DIGITAL_GAIN_DB));
 

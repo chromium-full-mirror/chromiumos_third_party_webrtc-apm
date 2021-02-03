@@ -24,6 +24,7 @@ CXX_LIBRARY(libwebrtc_apm.so): \
 
 libwebrtc_apm_CXX_OBJECTS = \
 	libaudio_processing \
+	rnn_vad \
 	rtc_base/librtc_base \
 	common_audio/libcommon_audio \
 	system_wrappers/source/libsystem_wrappers \
@@ -35,6 +36,7 @@ libwebrtc_apm_CXX_OBJECTS = \
 
 ifeq (${USE_SSE2},1)
 libwebrtc_apm_CXX_OBJECTS += \
+	rnn_vad_avx2 \
 	common_audio_avx2 \
 	aec3_avx2
 endif
@@ -52,6 +54,7 @@ CXX_LIBRARY(libwebrtc_apm.so): LDLIBS += \
 	common_audio/libcommon_audio.pic.a \
 	system_wrappers/source/libsystem_wrappers.pic.a \
 	modules/audio_coding/libaudio_coding.pic.a \
+	rnn_vad.pic.a \
 	rtc_base/librtc_base.pic.a \
 	libaudioproc_debug_proto.pic.a \
 	absl.pic.a \
@@ -62,7 +65,8 @@ CXX_LIBRARY(libwebrtc_apm.so): LDLIBS += \
 ifeq (${USE_SSE2},1)
 CXX_LIBRARY(libwebrtc_apm.so): LDLIBS += \
 	aec3_avx2.pic.a \
-	common_audio_avx2.pic.a
+	common_audio_avx2.pic.a \
+	rnn_vad_avx2.pic.a
 endif
 
 all: CXX_LIBRARY(libwebrtc_apm.so)
