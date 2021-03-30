@@ -87,7 +87,6 @@ agc2_CXX_OBJECTS = \
 	modules/audio_processing/agc2/adaptive_agc.o \
 	modules/audio_processing/agc2/adaptive_digital_gain_applier.o \
 	modules/audio_processing/agc2/adaptive_mode_level_estimator.o \
-	modules/audio_processing/agc2/adaptive_mode_level_estimator_agc.o \
 	modules/audio_processing/agc2/biquad_filter.o \
 	modules/audio_processing/agc2/compute_interpolated_gain_curve.o \
 	modules/audio_processing/agc2/down_sampler.o \
@@ -144,6 +143,10 @@ ns_CXX_OBJECTS = \
 	modules/audio_processing/ns/suppression_params.o \
 	modules/audio_processing/ns/wiener_filter.o
 
+capture_levels_adjuster_CXX_OBJECTS = \
+	modules/audio_processing/capture_levels_adjuster/audio_samples_scaler.o \
+	modules/audio_processing/capture_levels_adjuster/capture_levels_adjuster.o
+
 # TODO(hychao): WEBRTC_NS_FLOAT=0 for cases prefer fixed point operation
 CXX_STATIC_LIBRARY(libaudio_processing.pic.a): \
 	CPPFLAGS += -I. -DWEBRTC_POSIX \
@@ -165,7 +168,8 @@ CXX_STATIC_LIBRARY(libaudio_processing.pic.a): \
 	$(audio_frame_api_CXX_OBJECTS) \
 	$(aec3_factory_CXX_OBJECTS) \
 	$(aec3_config_CXX_OBJECTS) \
-	$(ns_CXX_OBJECTS)
+	$(ns_CXX_OBJECTS) \
+	$(capture_levels_adjuster_CXX_OBJECTS)
 
 module/libaudio_processing: CXX_STATIC_LIBRARY(libaudio_processing.pic.a)
 

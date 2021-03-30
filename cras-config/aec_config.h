@@ -10,6 +10,7 @@
 
 #include "api/audio/echo_canceller3_config.h"
 
+/* Keys for EchoCanceller3Config:Buffering */
 #define AEC_BUFFERING_EXCESS_RENDER_DETECTION_INTERVAL_BLOCKS \
 	"buffering:excess_render_detection_interval_blocks"
 #define AEC_BUFFERING_EXCESS_RENDER_DETECTION_INTERVAL_BLOCKS_VALUE 250
@@ -17,6 +18,7 @@
 	"buffering:max_allowed_excess_render_blocks"
 #define AEC_BUFFERING_MAX_ALLOWED_EXCESS_RENDER_BLOCKS_VALUE 8
 
+/* Keys for EchoCanceller3Config:Delay */
 #define AEC_DELAY_DEFAULT_DELAY "delay:default_delay"
 #define AEC_DELAY_DEFAULT_DELAY_VALUE 5
 #define AEC_DELAY_DOWN_SAMPLING_FACTOR "delay:down_sampling_factor"
@@ -29,10 +31,11 @@
 #define AEC_DELAY_HYSTERESIS_LIMIT_BLOCKS_VALUE 1
 #define AEC_DELAY_FIXED_CAPTURE_DELAY_SAMPLES \
 	"delay:fixed_capture_delay_samples"
-#define AEC_DELAY_FIXED_CAPTURE_DELAY_SAMPLES_VALUE 0
+#define AEC_DELAY_FIXED_CAPTURE_DELAY_SAMPLES_VALUE 1000
 #define AEC_DELAY_DELAY_ESTIMATE_SMOOTHING "delay:delay_estimate_smoothing"
 #define AEC_DELAY_DELAY_ESTIMATE_SMOOTHING_VALUE 0.7f
-#define AEC_DELAY_DELAY_CANDIDATE_DETECTION_THRESHOLD \
+
+#define AEC_DELAY_DELAY_CANDIDATE_DETECTION_THRESHOLD   \
 	"delay:delay_candidate_detection_threshold"
 #define AEC_DELAY_DELAY_CANDIDATE_DETECTION_THRESHOLD_VALUE 0.2f
 #define AEC_DELAY_DELAY_SELECTION_THRESHOLD_INITIAL \
@@ -41,12 +44,14 @@
 #define AEC_DELAY_DELAY_SELECTION_THRESHOLD_CONVERGED \
 	"delay:delay_selection_thresholds_converged"
 #define AEC_DELAY_DELAY_SELECTION_THRESHOLD_CONVERGED_VALUE 20
-#define AEC_DELAY_USE_EXTERNAL_DELAY_ESTIMATOR \
+
+#define AEC_DELAY_USE_EXTERNAL_DELAY_ESTIMATOR  \
 	"delay:use_external_delay_estimator"
 #define AEC_DELAY_USE_EXTERNAL_DELAY_ESTIMATOR_VALUE 0
 #define AEC_DELAY_LOG_WARNING_ON_DELAY_CHANGES \
 	"delay:log_warning_on_delay_changes"
 #define AEC_DELAY_LOG_WARNING_ON_DELAY_CHANGES_VALUE 0
+
 #define AEC_DELAY_RENDER_ALIGNMENT_MIXING_DOWNMIX \
 	"delay:render_alignment_mixing_downmix"
 #define AEC_DELAY_RENDER_ALIGNMENT_MIXING_DOWNMIX_VALUE 0
@@ -72,6 +77,7 @@
 	"delay:capture_alignment_mixing_prefer_first_two_channels"
 #define AEC_DELAY_CAPTURE_ALIGNMENT_MIXING_PREFER_FIRST_TWO_CHANNELS_VALUE 0
 
+/* Keys for EchoCanceller3Config:Filter */
 // Filter refined configuration
 #define AEC_FILTER_REFINED_LENGTH_BLOCKS "filter.refined:length_blocks"
 #define AEC_FILTER_REFINED_LENGTH_BLOCKS_VALUE 13
@@ -136,6 +142,9 @@
 #define AEC_FILTER_USE_LINEAR_FILTER \
 	"filter:use_linear_filter"
 #define AEC_FILTER_USE_LINEAR_FILTER_VALUE 1
+#define AEC_FILTER_HIGH_PASS_FILTER_ECHO_REFERENCE \
+	"filter:high_pass_filter_echo_reference"
+#define AEC_FILTER_HIGH_PASS_FILTER_ECHO_REFERENCE_VALUE 0
 #define AEC_FILTER_EXPORT_LINEAR_AEC_OUTPUT \
 	"filter:export_linear_aec_output"
 #define AEC_FILTER_EXPORT_LINEAR_AEC_OUTPUT_VALUE 0
@@ -168,6 +177,7 @@
 #define AEC_EP_STRENGTH_BOUNDED_ERL "ep_strength:bounded_erl"
 #define AEC_EP_STRENGTH_BOUNDED_ERL_VALUE 0
 
+// EchoAudibility
 #define AEC_ECHO_AUDIBILITY_LOW_RENDER_LIMIT "echo_audibility:low_render_limit"
 #define AEC_ECHO_AUDIBILITY_LOW_RENDER_LIMIT_VALUE 4 * 64.f
 #define AEC_ECHO_AUDIBILITY_NORMAL_RENDER_LIMIT \
@@ -234,9 +244,11 @@
 	"echo_model:model_reverb_in_nonlinear_mode"
 #define AEC_ECHO_MODEL_MODEL_REVERB_IN_NONLINEAR_MODE_VALUE 1
 
+// ComfortNoise
 #define AEC_COMFORT_NOISE_NOISE_FLOOR_DBFS "comfort_noise:noise_floor_dbfs"
 #define AEC_COMFORT_NOISE_NOISE_FLOOR_DBFS_VALUE -96.03406f
 
+// Suppressor
 #define AEC_SUPPRESSOR_NEAREND_AVERAGE_BLOCKS \
 	"suppressor:nearend_average_blocks"
 #define AEC_SUPPRESSOR_NEAREND_AVERAGE_BLOCKS_VALUE 4

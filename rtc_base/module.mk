@@ -22,12 +22,13 @@ rtc_base_approved_generic_CXX_OBJECTS = \
 	rtc_base/rate_tracker.o \
 	rtc_base/string_to_number.o \
 	rtc_base/string_encode.o \
+	rtc_base/system_time.o \
 	rtc_base/timestamp_aligner.o \
 	rtc_base/time_utils.o \
 	rtc_base/zero_memory.o \
 	rtc_base/event.o \
 	rtc_base/logging.o \
-	rtc_base/synchronization/sequence_checker.o \
+	rtc_base/synchronization/sequence_checker_internal.o \
 	rtc_base/synchronization/yield_policy.o
 
 # requires libevent at link

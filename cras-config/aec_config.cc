@@ -24,12 +24,16 @@ void aec_config_get(dictionary *ini, webrtc::EchoCanceller3Config *config)
 	if (ini == NULL)
 		return;
 
+       syslog(LOG_ERR, "Reading AEC3 ini");
+
+	/* Keys for EchoCanceller3Config:Buffering */
 	config->buffering.excess_render_detection_interval_blocks =
 		AEC_GET_INT(ini, BUFFERING,
 			EXCESS_RENDER_DETECTION_INTERVAL_BLOCKS);
 	config->buffering.max_allowed_excess_render_blocks =
 		AEC_GET_INT(ini, BUFFERING, MAX_ALLOWED_EXCESS_RENDER_BLOCKS);
 
+	/* Keys for EchoCanceller3Config:Delay */
 	config->delay.default_delay =
 		AEC_GET_INT(ini, DELAY, DEFAULT_DELAY);
 	config->delay.down_sampling_factor =
@@ -44,17 +48,19 @@ void aec_config_get(dictionary *ini, webrtc::EchoCanceller3Config *config)
 		AEC_GET_INT(ini, DELAY, FIXED_CAPTURE_DELAY_SAMPLES);
 	config->delay.delay_estimate_smoothing =
 		AEC_GET_FLOAT(ini, DELAY, DELAY_ESTIMATE_SMOOTHING);
+
 	config->delay.delay_candidate_detection_threshold =
 		AEC_GET_FLOAT(ini, DELAY, DELAY_CANDIDATE_DETECTION_THRESHOLD);
 	config->delay.delay_selection_thresholds.initial =
 		AEC_GET_INT(ini, DELAY, DELAY_SELECTION_THRESHOLD_INITIAL);
 	config->delay.delay_selection_thresholds.converged =
 		AEC_GET_INT(ini, DELAY, DELAY_SELECTION_THRESHOLD_CONVERGED);
+
 	config->delay.use_external_delay_estimator =
 		AEC_GET_INT(ini, DELAY, USE_EXTERNAL_DELAY_ESTIMATOR);
-
 	config->delay.log_warning_on_delay_changes =
 		AEC_GET_INT(ini, DELAY, LOG_WARNING_ON_DELAY_CHANGES);
+
 	config->delay.render_alignment_mixing.downmix =
 		AEC_GET_INT(ini, DELAY, RENDER_ALIGNMENT_MIXING_DOWNMIX);
 	config->delay.render_alignment_mixing.adaptive_selection =
@@ -76,6 +82,7 @@ void aec_config_get(dictionary *ini, webrtc::EchoCanceller3Config *config)
 		AEC_GET_INT(ini, DELAY,
 			CAPTURE_ALIGNMENT_MIXING_PREFER_FIRST_TWO_CHANNELS);
 
+	/* Keys for EchoCanceller3Config:Filter */
 	config->filter.refined.length_blocks =
 		AEC_GET_INT(ini, FILTER_REFINED, LENGTH_BLOCKS);
 	config->filter.refined.leakage_converged =
@@ -128,9 +135,12 @@ void aec_config_get(dictionary *ini, webrtc::EchoCanceller3Config *config)
 		AEC_GET_INT(ini, FILTER, ENABLE_COARSE_FILTER_OUTPUT_USAGE);
 	config->filter.use_linear_filter =
 		AEC_GET_INT(ini, FILTER, USE_LINEAR_FILTER);
+        config->filter.high_pass_filter_echo_reference =
+		AEC_GET_INT(ini, FILTER, HIGH_PASS_FILTER_ECHO_REFERENCE);
 	config->filter.export_linear_aec_output =
 		AEC_GET_INT(ini, FILTER, EXPORT_LINEAR_AEC_OUTPUT);
 
+	/* Keys for EchoCanceller3Config:Erle */
 	config->erle.min =
 		AEC_GET_FLOAT(ini, ERLE, MIN);
 	config->erle.max_l =
@@ -146,6 +156,7 @@ void aec_config_get(dictionary *ini, webrtc::EchoCanceller3Config *config)
 	config->erle.clamp_quality_estimate_to_one =
 		AEC_GET_INT(ini, ERLE, CLAMP_QUALITY_ESTIMATE_TO_ONE);
 
+	/* Keys for EchoCanceller3Config:EpStrength */
 	config->ep_strength.default_gain =
 		AEC_GET_FLOAT(ini, EP_STRENGTH, DEFAULT_GAIN);
 	config->ep_strength.default_len =
@@ -155,6 +166,7 @@ void aec_config_get(dictionary *ini, webrtc::EchoCanceller3Config *config)
 	config->ep_strength.echo_can_saturate =
 		AEC_GET_INT(ini, EP_STRENGTH, ECHO_CAN_SATURATE);
 
+	/* Keys for EchoCanceller3Config:EchoAudibility */
 	config->echo_audibility.low_render_limit =
 		AEC_GET_FLOAT(ini, ECHO_AUDIBILITY, LOW_RENDER_LIMIT);
 	config->echo_audibility.normal_render_limit =
@@ -173,6 +185,7 @@ void aec_config_get(dictionary *ini, webrtc::EchoCanceller3Config *config)
 		AEC_GET_INT(ini, ECHO_AUDIBILITY,
 			    USE_STATIONARITY_PROPERTIES_AT_INIT);
 
+	/* Keys for EchoCanceller3Config:RenderLevels */
 	config->render_levels.active_render_limit =
 		AEC_GET_FLOAT(ini, RENDER_LEVELS, ACTIVE_RENDER_LIMIT);
 	config->render_levels.poor_excitation_render_limit =
@@ -182,11 +195,13 @@ void aec_config_get(dictionary *ini, webrtc::EchoCanceller3Config *config)
 	config->render_levels.render_power_gain_db =
 		AEC_GET_FLOAT(ini, RENDER_LEVELS, RENDER_POWER_GAIN_DB);
 
+	/* Keys for EchoCanceller3Config:EchoRemovalControl */
 	config->echo_removal_control.has_clock_drift =
 		AEC_GET_INT(ini, ECHO_REMOVAL_CTL, HAS_CLOCK_DRIFT);
 	config->echo_removal_control.linear_and_stable_echo_path =
 		AEC_GET_INT(ini, ECHO_REMOVAL_CTL, LINEAR_AND_STABLE_ECHO_PATH);
 
+	/* Keys for EchoCanceller3Config:EchoModel */
 	config->echo_model.noise_floor_hold =
 		AEC_GET_INT(ini, ECHO_MODEL, NOISE_FLOOR_HOLD);
 	config->echo_model.min_noise_floor_power =
@@ -204,9 +219,11 @@ void aec_config_get(dictionary *ini, webrtc::EchoCanceller3Config *config)
 	config->echo_model.model_reverb_in_nonlinear_mode =
 		AEC_GET_INT(ini, ECHO_MODEL, MODEL_REVERB_IN_NONLINEAR_MODE);
 
+	/* Keys for EchoCanceller3Config:ComfortNoise */
 	config->comfort_noise.noise_floor_dbfs =
 		AEC_GET_FLOAT(ini, COMFORT_NOISE, NOISE_FLOOR_DBFS);
 
+	/* Keys for EchoCanceller3Config:Suppressor */
 	config->suppressor.nearend_average_blocks =
 		AEC_GET_INT(ini, SUPPRESSOR, NEAREND_AVERAGE_BLOCKS);
 
@@ -413,6 +430,8 @@ void aec_config_dump(dictionary *ini)
 			config.filter.enable_coarse_filter_output_usage);
 	syslog(LOG_ERR, "    use_linear_filter %d",
 			config.filter.use_linear_filter);
+	syslog(LOG_ERR, "    high_pass_filter_echo_reference %d",
+			config.filter.high_pass_filter_echo_reference);
 	syslog(LOG_ERR, "    export_linear_aec_output %d",
 			config.filter.export_linear_aec_output);
 

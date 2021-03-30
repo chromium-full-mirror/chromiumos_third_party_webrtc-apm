@@ -15,13 +15,38 @@
 /* Pointer to a webrtc::AudioProcessing instance. */
 typedef void* webrtc_apm;
 
-/* Creates a webrtc_apm for forward stream properties. In CRAS use case it
+/* Creates a webrtc_apm for forward stream properties using optional enforcement
+ * of the effects that are specified in the config files. In CRAS use case it
  * is usually created for input stream.
  * Args:
- *    num_channels - Number of channels of the forward stream.
- *    frame_rate - Frame rate used by forward stream.
- *    aec_config - Pointer to aec config.
- *    apm_config - Pointer to apm config.
+ *    num_channels   - Number of channels of the forward stream.
+ *    frame_rate     - Frame rate used by forward stream.
+ *    aec_config     - Pointer to aec config.
+ *    apm_config     - Pointer to apm config.
+ *    enforce_aec_on - When set to 1, enforces the aec to be activated
+ *                     regardless of settings in apm.ini
+ *    enforce_ns_on  - When set to 1, enforces the ns to be activated
+ *                     regardless of settings in apm.ini
+ *    enforce_agc_on - When set to 1, enforces the agc to be activated
+ *                     regardless of settings in apm.ini
+ */
+WEBRTC_APM_API webrtc_apm webrtc_apm_create_with_enforced_effects(
+		unsigned int num_channels,
+		unsigned int frame_rate,
+		dictionary *aec_ini,
+		dictionary *apm_ini,
+		unsigned int enforce_aec_on,
+		unsigned int enforce_ns_on,
+		unsigned int enforce_agc_on);
+
+/* Deprecated: Should be removed.
+ * Creates a webrtc_apm for forward stream properties using the parameters in
+ * the configs. In CRAS use case it is usually created for input stream.
+ * Args:
+ *    num_channels   - Number of channels of the forward stream.
+ *    frame_rate     - Frame rate used by forward stream.
+ *    aec_config     - Pointer to aec config.
+ *    apm_config     - Pointer to apm config.
  */
 WEBRTC_APM_API webrtc_apm webrtc_apm_create(
 		unsigned int num_channels,

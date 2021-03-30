@@ -156,16 +156,9 @@ void Aec3ConfigFromJsonString(absl::string_view json_string,
   *parsing_successful = true;
 
   Json::Value root;
-  Json::CharReaderBuilder builder;
-  std::unique_pre<Json::CharReader> reader(builder.newCharReader());
-  std::string error;
-
-  bool success = reader->parse(json_string.data(),
-                               json_string.data() + json_string.size(),
-                               &root, &error);
+  bool success = Json::Reader().parse(std::string(json_string), root);
   if (!success) {
-    RTC_LOG(LS_ERROR) << "Incorrect JSON format: " << json_string
-                      << " error: " << error;
+    RTC_LOG(LS_ERROR) << "Incorrect JSON format: " << json_string;
     *parsing_successful = false;
     return;
   }
@@ -237,6 +230,8 @@ void Aec3ConfigFromJsonString(absl::string_view json_string,
     ReadParam(section, "enable_coarse_filter_output_usage",
               &cfg.filter.enable_coarse_filter_output_usage);
     ReadParam(section, "use_linear_filter", &cfg.filter.use_linear_filter);
+    ReadParam(section, "high_pass_filter_echo_reference",
+              &cfg.filter.high_pass_filter_echo_reference);
     ReadParam(section, "export_linear_aec_output",
               &cfg.filter.export_linear_aec_output);
   }
@@ -520,6 +515,9 @@ std::string Aec3ConfigToJsonString(const EchoCanceller3Config& config) {
       << ",";
   ost << "\"use_linear_filter\": "
       << (config.filter.use_linear_filter ? "true" : "false") << ",";
+  ost << "\"high_pass_filter_echo_reference\": "
+      << (config.filter.high_pass_filter_echo_reference ? "true" : "false")
+      << ",";
   ost << "\"export_linear_aec_output\": "
       << (config.filter.export_linear_aec_output ? "true" : "false");
 

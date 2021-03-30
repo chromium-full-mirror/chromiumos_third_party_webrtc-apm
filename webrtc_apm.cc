@@ -17,10 +17,25 @@ extern "C" {
 
 #include "webrtc_apm.h"
 
-webrtc_apm webrtc_apm_create(unsigned int num_channels,
-			     unsigned int frame_rate,
-			     dictionary *aec_ini,
-			     dictionary *apm_ini)
+
+webrtc_apm webrtc_apm_create(
+		unsigned int num_channels,
+		unsigned int frame_rate,
+		dictionary *aec_ini,
+		dictionary *apm_ini) {
+
+  return webrtc_apm_create_with_enforced_effects(num_channels, frame_rate,
+		aec_ini,apm_ini,0,0,0);
+}
+
+webrtc_apm webrtc_apm_create_with_enforced_effects(
+		unsigned int num_channels,
+		unsigned int frame_rate,
+		dictionary *aec_ini,
+		dictionary *apm_ini,
+		unsigned int enforce_aec_on,
+		unsigned int enforce_ns_on,
+		unsigned int enforce_agc_on)
 {
 	int err;
 	webrtc::AudioProcessing *apm;
@@ -40,6 +55,7 @@ webrtc_apm webrtc_apm_create(unsigned int num_channels,
 			return NULL;
 	}
 
+	/* Set the AEC-tunings. */
 	if (aec_ini) {
 		aec_config_get(aec_ini, &aec3_config);
 		ec3_factory.reset(
@@ -51,8 +67,36 @@ webrtc_apm webrtc_apm_create(unsigned int num_channels,
 	apm_builder.SetEchoControlFactory(std::move(ec3_factory));
 	apm = apm_builder.Create();
 
-	if (apm_ini)
-		apm_config_apply(apm_ini, apm);
+	/* Set the rest of the all settings/tunings. */
+	webrtc::AudioProcessing::Config config = apm->GetConfig();
+	bool config_changed = false;
+	if (aec_ini || enforce_aec_on == 1) {
+		config.echo_canceller.enabled = true;
+		config_changed = true;
+	}
+
+	if (apm_ini) {
+		apm_config_set(apm_ini, &config);
+		config_changed = true;
+	}
+
+	if (enforce_ns_on == 1) {
+		config.noise_suppression.enabled = true;
+		config_changed = true;
+	}
+
+	if (enforce_agc_on == 1) {
+		config.gain_controller1.enabled = true;
+		config.gain_controller1.mode =
+			webrtc::AudioProcessing::Config::GainController1::Mode::kAdaptiveAnalog;
+		config.capture_level_adjustment.enabled = true;
+		config.capture_level_adjustment.analog_mic_gain_emulation.enabled = true;
+		config_changed = true;
+	}
+
+	if (config_changed) {
+		apm->ApplyConfig(config);
+	}
 
 	err = apm->Initialize(frame_rate, frame_rate, frame_rate,
 			      channel_layout, channel_layout, channel_layout);
