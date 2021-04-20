@@ -14,7 +14,7 @@ endif
 
 libaudio_processing: module/libaudio_processing
 
-webrtc_apm_PC_DEPS = libevent protobuf
+webrtc_apm_PC_DEPS = libevent protobuf libmetrics
 
 webrtc_apm_CXX_OBJECTS = \
 	webrtc_apm.o

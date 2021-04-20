@@ -3,6 +3,8 @@
  * found in the LICENSE file.
  */
 
+#include <metrics/metrics_library.h>
+
 #include "api/audio/echo_canceller3_factory.h"
 #include "api/task_queue/default_task_queue_factory.h"
 #include "cras-config/aec_config.h"
@@ -11,12 +13,27 @@
 #include "modules/audio_processing/include/aec_dump.h"
 #include "modules/audio_processing/include/audio_processing.h"
 #include "rtc_base/task_queue.h"
+#include "system_wrappers/include/metrics.h"
 
 extern "C" {
 #include <errno.h>
 
 #include "webrtc_apm.h"
 
+using webrtc::metrics::SampleInfo;
+
+static std::string hist_name_prefix_;
+static std::unique_ptr<MetricsLibraryInterface> metrics_lib_;
+
+void webrtc_apm_init_metrics(const char *prefix)
+{
+	if (prefix == NULL)
+		return;
+
+	webrtc::metrics::Enable();
+	hist_name_prefix_ = prefix;
+	metrics_lib_ = std::make_unique<MetricsLibrary>();
+}
 
 webrtc_apm webrtc_apm_create(
 		unsigned int num_channels,
@@ -149,6 +166,27 @@ void webrtc_apm_destroy(webrtc_apm ptr)
 	webrtc::AudioProcessing *apm;
 	apm = reinterpret_cast<webrtc::AudioProcessing *>(ptr);
 	delete apm;
+
+	std::map<std::string, std::unique_ptr<SampleInfo>> hist;
+
+	if (!metrics_lib_)
+		return;
+
+	webrtc::metrics::GetAndReset(&hist);
+
+	for (auto it = hist.begin(); it != hist.end(); it++) {
+		SampleInfo *info = it->second.get();
+		std::string name = info->name;
+		name.insert(0, hist_name_prefix_);
+		/* info->samples stores <value, # of events> */
+		for (auto sample = info->samples.begin();
+		     sample != info->samples.end(); sample++) {
+			for (int i = 0; i < sample->second; i++)
+				metrics_lib_->SendToUMA(name, sample->first,
+							info->min, info->max,
+							info->bucket_count);
+		}
+	}
 }
 
 int webrtc_apm_set_stream_delay(webrtc_apm ptr, int delay_ms)

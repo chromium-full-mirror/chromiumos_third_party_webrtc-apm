@@ -15,6 +15,12 @@
 /* Pointer to a webrtc::AudioProcessing instance. */
 typedef void* webrtc_apm;
 
+/* Enables UMA metrics in webrtc APM.
+ * Args:
+ *    prefix - String to append to existing histogram name.
+ */
+WEBRTC_APM_API void webrtc_apm_init_metrics(const char *prefix);
+
 /* Creates a webrtc_apm for forward stream properties using optional enforcement
  * of the effects that are specified in the config files. In CRAS use case it
  * is usually created for input stream.
