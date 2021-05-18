@@ -89,6 +89,12 @@ webrtc_apm webrtc_apm_create_with_enforced_effects(
 	bool config_changed = false;
 	if (aec_ini || enforce_aec_on == 1) {
 		config.echo_canceller.enabled = true;
+		/* Activate playout stereo processing by default. This can be
+		 * turned off in |apm_ini|.
+		 */
+		if (enforce_aec_on) {
+			config.pipeline.multi_channel_render = true;
+		}
 		config_changed = true;
 	}
 
