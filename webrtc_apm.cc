@@ -122,7 +122,8 @@ webrtc_apm webrtc_apm_create_with_enforced_effects(
 	}
 
 	err = apm->Initialize(frame_rate, frame_rate, frame_rate,
-			      channel_layout, channel_layout, channel_layout);
+			      channel_layout, webrtc::AudioProcessing::kMono,
+			      channel_layout);
 	if (err) {
 		delete apm;
 		return NULL;
@@ -161,10 +162,12 @@ int webrtc_apm_process_stream_f(webrtc_apm ptr,
 {
 	webrtc::AudioProcessing *apm;
 
-	webrtc::StreamConfig config =
+	webrtc::StreamConfig iconfig =
 		webrtc::StreamConfig(rate, num_channels);
+	webrtc::StreamConfig oconfig =
+		webrtc::StreamConfig(rate, 1);
 	apm = reinterpret_cast<webrtc::AudioProcessing *>(ptr);
-	return apm->ProcessStream(data, config, config, data);
+	return apm->ProcessStream(data, iconfig, oconfig, data);
 }
 
 void webrtc_apm_destroy(webrtc_apm ptr)
