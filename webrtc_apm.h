@@ -7,6 +7,7 @@
 #define WEBRTC_APM_H_
 
 #include <iniparser.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -59,6 +60,26 @@ WEBRTC_APM_API webrtc_apm webrtc_apm_create(
 		unsigned int frame_rate,
 		dictionary *aec_ini,
 		dictionary *apm_ini);
+
+/* Enables/disables effects in a webrtc_apm.
+ * This call is fully thread-safe and safe to use concurrently with
+ * any of the processing methods, e.g.
+ * webrtc_apm_process_reverse_stream_f, webrtc_apm_process_stream_f
+ * webrtc_apm_aec_dump, webrtc_apm_set_stream_delay.
+ * However, the call currently has a temporary impact on the real-time
+ * performance and should be used with care and and as little as possible.
+ *
+ * Args:
+ *    ptr        - Pointer to the webrtc_apm instance.
+ *    enable_aec - When set to 1, enables the AEC.
+ *    enable_ns  - When set to 1, enables the NS.
+ *    enable_agc - When set to 1, enables the AGC.
+ */
+WEBRTC_APM_API void webrtc_apm_enable_effects(
+		webrtc_apm ptr,
+		bool enable_aec,
+		bool enable_ns,
+		bool enable_agc);
 
 /* Dumps configs content.
  * Args:

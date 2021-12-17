@@ -132,6 +132,33 @@ webrtc_apm webrtc_apm_create_with_enforced_effects(
 	return reinterpret_cast<webrtc_apm>(apm);
 }
 
+WEBRTC_APM_API void webrtc_apm_enable_effects(
+		webrtc_apm ptr,
+		bool enable_aec,
+		bool enable_ns,
+		bool enable_agc)
+{
+	webrtc::AudioProcessing *apm =
+		reinterpret_cast<webrtc::AudioProcessing*>(ptr);
+	webrtc::AudioProcessing::Config config = apm->GetConfig();
+	bool config_changed = false;
+
+	config_changed = config.echo_canceller.enabled != enable_aec;
+	config.echo_canceller.enabled = enable_aec;
+
+	config_changed = config_changed ||
+			config.noise_suppression.enabled != enable_ns;
+	config.noise_suppression.enabled = enable_ns;
+
+	config_changed = config_changed ||
+			config.gain_controller1.enabled != enable_agc;
+	config.gain_controller1.enabled = enable_agc;
+
+	if (config_changed) {
+		apm->ApplyConfig(config);
+	}
+}
+
 void webrtc_apm_dump_configs(dictionary *apm_ini,
 			     dictionary *aec_ini)
 {
