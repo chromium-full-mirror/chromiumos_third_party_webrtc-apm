@@ -89,12 +89,6 @@
 #define APM_GAIN_CONTROL_COMPRESSION_GAIN_DB_VALUE 9
 #define APM_GAIN_CONTROL_ENABLE_LIMITER "apm:gain_control_enable_limiter"
 #define APM_GAIN_CONTROL_ENABLE_LIMITER_VALUE 1
-#define APM_GAIN_CONTROL_ANALOG_LEVEL_MINIMUM \
-	 "apm:gain_control_analog_level_minimum"
-#define APM_GAIN_CONTROL_ANALOG_LEVEL_MINIMUM_VALUE 0
-#define APM_GAIN_CONTROL_ANALOG_LEVEL_MAXIMUM \
-	 "apm:gain_control_analog_level_maximum"
-#define APM_GAIN_CONTROL_ANALOG_LEVEL_MAXIMUM_VALUE 255
 
 /* Keys for AudioProcessing::GainController1::AnalogGainController */
 #define APM_ANALOG_GAIN_CONTROLLER_ENABLED "apm:analog_gain_controller_enabled"
@@ -108,6 +102,41 @@
 #define APM_ANALOG_GAIN_CONTROLLER_ENABLE_DIGITAL_ADAPTIVE \
 	"apm:analog_gain_controller_enable_digital_adaptive"
 #define APM_ANALOG_GAIN_CONTROLLER_ENABLE_DIGITAL_ADAPTIVE_VALUE 1
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPED_LEVEL_STEP \
+	"apm:analog_gain_controller_clipped_level_step"
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPED_LEVEL_STEP_VALUE 15
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPED_RATIO_THRESHOLD \
+	"apm:analog_gain_controller_clipped_ratio_threshold"
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPED_RATIO_THRESHOLD_VALUE 0.1f
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPED_WAIT_FRAMES \
+	"apm:analog_gain_controller_clipped_wait_frames"
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPED_WAIT_FRAMES_VALUE 300
+
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_ENABLED \
+	"apm:analog_gain_controller_clipping_predictor_enabled"
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_ENABLED_VALUE 0
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_MODE \
+	"apm:analog_gain_controller_clipping_predictor_mode"
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_MODE_VALUE 0
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_WINDOW_LENGTH \
+	"apm:analog_gain_controller_clipping_predictor_window_length"
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_WINDOW_LENGTH_VALUE 5
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_REFERENCE_WINDOW_LENGTH \
+	"apm:analog_gain_controller_clipping_predictor_reference_window_length"
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_REFERENCE_WINDOW_LENGTH_VALUE 5
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_REFERENCE_WINDOW_DELAY \
+	"apm:analog_gain_controller_clipping_predictor_reference_window_delay"
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_REFERENCE_WINDOW_DELAY_VALUE 5
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_CLIPPING_THRESHOLD \
+	"apm:analog_gain_controller_clipping_predictor_clipping_threshold"
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_CLIPPING_THRESHOLD_VALUE -1.0f
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_CREST_FACTOR_MARGIN \
+	"apm:analog_gain_controller_clipping_predictor_crest_factor_margin"
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_CREST_FACTOR_MARGIN_VALUE 3.0f
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_USE_PREDICTED_STEP \
+	"apm:analog_gain_controller_clipping_predictor_use_predicted_step"
+#define APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_USE_PREDICTED_STEP_VALUE 1
+
 
 /* Keys for AudioProcessing::GainController2 */
 #define APM_GAIN_CONTROLLER2_ENABLED "apm:gain_controller2_enabled"
@@ -121,51 +150,34 @@
 /* Keys for AudioProcessing::GainController2::AdaptiveDigital */
 #define ADAPTIVE_DIGITAL_ENABLED "apm:adaptive_digital_enabled"
 #define ADAPTIVE_DIGITAL_ENABLED_VALUE 0
-#define ADAPTIVE_DIGITAL_VAD_PROBABILITY_ATTACK \
-	"apm:adaptive_digital_vad_probability_attack"
-#define ADAPTIVE_DIGITAL_VAD_PROBABILITY_ATTACK_VALUE 0.3f
-/* 0: kRms, 1: kPeak */
-#define ADAPTIVE_DIGITAL_LEVEL_ESTIMATOR \
-	"apm:adaptive_digital_level_estimator"
-#define ADAPTIVE_DIGITAL_LEVEL_ESTIMATOR_VALUE 0
-#define ADAPTIVE_DIGITAL_LEVEL_ESTIMATOR_ADJACENT_SPEECH_FRAMES_THRESHOLD \
-	"apm:adaptive_digital_level_estimator_adjacent_speech_frames_threshold"
-#define ADAPTIVE_DIGITAL_LEVEL_ESTIMATOR_ADJACENT_SPEECH_FRAMES_THRESHOLD_VALUE 6
-#define ADAPTIVE_DIGITAL_USE_SATURATION_PROTECTOR \
-	"apm:adaptive_digital_use_saturation_protector"
-#define ADAPTIVE_DIGITAL_USE_SATURATION_PROTECTOR_VALUE 1
-#define ADAPTIVE_DIGITAL_INITIAL_SATURATION_MARGIN_DB \
-	"apm:adaptive_digital_initial_saturation_margin_db"
-#define ADAPTIVE_DIGITAL_INITIAL_SATURATION_MARGIN_DB_VALUE 20.f
-#define ADAPTIVE_DIGITAL_EXTRA_SATURATION_MARGIN_DB \
-	"apm:adaptive_digital_extra_saturation_margin_db"
-#define ADAPTIVE_DIGITAL_EXTRA_SATURATION_MARGIN_DB_VALUE 5.f
-#define ADAPTIVE_DIGITAL_GAIN_APPLIER_ADJACENT_SPEECH_FRAMES_THRESHOLD \
-	"apm:adaptive_digital_gain_applier_adjacent_speech_frames_threshold"
-#define ADAPTIVE_DIGITAL_GAIN_APPLIER_ADJACENT_SPEECH_FRAMES_THRESHOLD_VALUE 6
-#define ADAPTIVE_DIGITAL_MAX_GAIN_CHANGE_DB_PER_SECOND \
+#define ADAPTIVE_DIGITAL_DRY_RUN         \
+	"apm:adaptive_digital_dry_run"
+#define ADAPTIVE_DIGITAL_DRY_RUN_VALUE 0
+#define ADAPTIVE_DIGITAL_HEADROOM_DB         \
+	"apm:adaptive_digital_headroom_db"
+#define ADAPTIVE_DIGITAL_HEADROOM_DB_VALUE 6.0f
+#define ADAPTIVE_DIGITAL_MAX_GAIN_DB         \
+	"apm:adaptive_digital_max_gain_db"
+#define ADAPTIVE_DIGITAL_MAX_GAIN_DB_VALUE 30.0f
+#define ADAPTIVE_DIGITAL_INITIAL_GAIN_DB         \
+	"apm:adaptive_digital_initial_gain_db"
+#define ADAPTIVE_DIGITAL_INITIAL_GAIN_DB_VALUE 8.0f
+#define ADAPTIVE_DIGITAL_VAD_RESET_PERIOD_MS         \
+	"apm:adaptive_digital_vad_reset_period_ms"
+#define ADAPTIVE_DIGITAL_VAD_RESET_PERIOD_MS_VALUE 1500
+#define ADAPTIVE_DIGITAL_ADJACENT_SPEECH_FRAMES_THRESHOLD         \
+	"apm:adaptive_digital_adjacent_speech_frames_threshold"
+#define ADAPTIVE_DIGITAL_ADJACENT_SPEECH_FRAMES_THRESHOLD_VALUE 12
+#define ADAPTIVE_DIGITAL_MAX_GAIN_CHANGE_DB_PER_SECOND         \
 	"apm:adaptive_digital_max_gain_change_db_per_second"
-#define ADAPTIVE_DIGITAL_MAX_GAIN_CHANGE_DB_PER_SECOND_VALUE 3.f
-#define ADAPTIVE_DIGITAL_MAX_OUTPUT_NOISE_LEVEL_DBFS \
+#define ADAPTIVE_DIGITAL_MAX_GAIN_CHANGE_DB_PER_SECOND_VALUE 3.0f
+#define ADAPTIVE_DIGITAL_MAX_OUTPUT_NOISE_LEVEL_DBFS         \
 	"apm:adaptive_digital_max_output_noise_level_dbfs"
-#define ADAPTIVE_DIGITAL_MAX_OUTPUT_NOISE_LEVEL_DBFS_VALUE -55.f
-#define ADAPTIVE_DIGITAL_SSE2_ALLOWED \
-	"apm:adaptive_digital_sse2_allowed"
-#define ADAPTIVE_DIGITAL_SSE2_ALLOWED_VALUE 1
-#define ADAPTIVE_DIGITAL_AVX2_ALLOWED \
-	"apm:adaptive_digital_avx2_allowed"
-#define ADAPTIVE_DIGITAL_AVX2_ALLOWED_VALUE 1
-#define ADAPTIVE_DIGITAL_NEON_ALLOWED \
-	"apm:adaptive_digital_neon_allowed"
-#define ADAPTIVE_DIGITAL_NEON_ALLOWED_VALUE 1
+#define ADAPTIVE_DIGITAL_MAX_OUTPUT_NOISE_LEVEL_DBFS_VALUE -50.0f
 
 /* Keys for AudioProcessing::ResidualEchoDetector */
 #define APM_RESIDUAL_ECHO_DETECTOR_ENABLED "apm:residual_echo_detector_enabled"
 #define APM_RESIDUAL_ECHO_DETECTOR_ENABLED_VALUE 1
-
-/* Keys for AudioProcessing::LevelEstimation */
-#define APM_LEVEL_ESTIMATION_ENABLED "apm:level_estimation_enabled"
-#define APM_LEVEL_ESTIMATION_ENABLED_VALUE 0
 
 /* Sets the default agc config values when no ini file is present. */
 void agc_set_default_config(dictionary *ini,

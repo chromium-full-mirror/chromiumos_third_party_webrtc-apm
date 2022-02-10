@@ -22,8 +22,6 @@ typedef webrtc::AudioProcessing::Config ApConfig;
 
 void apm_config_set(dictionary *ini, webrtc::AudioProcessing::Config *config)
 {
-	int level_estimator;
-
 	if (ini == NULL)
 		return;
 
@@ -102,10 +100,6 @@ void apm_config_set(dictionary *ini, webrtc::AudioProcessing::Config *config)
 		APM_GET_INT(ini, APM_GAIN_CONTROL_COMPRESSION_GAIN_DB);
 	config->gain_controller1.enable_limiter =
 		APM_GET_INT(ini, APM_GAIN_CONTROL_ENABLE_LIMITER);
-	config->gain_controller1.analog_level_minimum =
-		APM_GET_INT(ini, APM_GAIN_CONTROL_ANALOG_LEVEL_MINIMUM);
-	config->gain_controller1.analog_level_maximum =
-		APM_GET_INT(ini, APM_GAIN_CONTROL_ANALOG_LEVEL_MAXIMUM);
 
 	/* Keys for AudioProcessing::GainController1::AnalogGainController */
 	config->gain_controller1.analog_gain_controller.enabled =
@@ -117,6 +111,39 @@ void apm_config_set(dictionary *ini, webrtc::AudioProcessing::Config *config)
 	config->gain_controller1.analog_gain_controller.enable_digital_adaptive =
 		APM_GET_INT(ini,
 			APM_ANALOG_GAIN_CONTROLLER_ENABLE_DIGITAL_ADAPTIVE);
+	config->gain_controller1.analog_gain_controller.clipped_level_step =
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPED_LEVEL_STEP);
+	config->gain_controller1.analog_gain_controller.clipped_ratio_threshold =
+		APM_GET_FLOAT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPED_RATIO_THRESHOLD);
+	config->gain_controller1.analog_gain_controller.clipped_wait_frames =
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPED_WAIT_FRAMES);
+	config->gain_controller1.analog_gain_controller.clipping_predictor.enabled =
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_ENABLED);
+	config->gain_controller1.analog_gain_controller.clipping_predictor.mode =
+		static_cast<ApConfig::GainController1::AnalogGainController::ClippingPredictor::Mode>(
+		APM_GET_INT(ini, APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_MODE));
+	config->gain_controller1.analog_gain_controller.clipping_predictor.window_length =
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_WINDOW_LENGTH);
+	config->gain_controller1.analog_gain_controller.clipping_predictor.reference_window_length =
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_REFERENCE_WINDOW_LENGTH);
+	config->gain_controller1.analog_gain_controller.clipping_predictor.reference_window_delay =
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_REFERENCE_WINDOW_DELAY);
+	config->gain_controller1.analog_gain_controller.clipping_predictor.clipping_threshold =
+		APM_GET_FLOAT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_CLIPPING_THRESHOLD);
+	config->gain_controller1.analog_gain_controller.clipping_predictor.crest_factor_margin =
+		APM_GET_FLOAT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_CREST_FACTOR_MARGIN);
+	config->gain_controller1.analog_gain_controller.clipping_predictor.use_predicted_step =
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_USE_PREDICTED_STEP);
 
 	/* Keys for AudioProcessing::GainController2 */
 	config->gain_controller2.enabled =
@@ -129,40 +156,26 @@ void apm_config_set(dictionary *ini, webrtc::AudioProcessing::Config *config)
 	/* Keys for AudioProcessing::GainController2::AdaptiveDigital */
 	config->gain_controller2.adaptive_digital.enabled =
 		APM_GET_INT(ini, ADAPTIVE_DIGITAL_ENABLED);
-	config->gain_controller2.adaptive_digital.vad_probability_attack =
-		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_VAD_PROBABILITY_ATTACK);
-	level_estimator = APM_GET_INT(
-		ini, ADAPTIVE_DIGITAL_LEVEL_ESTIMATOR);
-	config->gain_controller2.adaptive_digital.level_estimator =
-		static_cast<ApConfig::GainController2::LevelEstimator>(level_estimator);
-	config->gain_controller2.adaptive_digital.level_estimator_adjacent_speech_frames_threshold =
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_LEVEL_ESTIMATOR_ADJACENT_SPEECH_FRAMES_THRESHOLD);
-	config->gain_controller2.adaptive_digital.use_saturation_protector =
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_USE_SATURATION_PROTECTOR);
-	config->gain_controller2.adaptive_digital.initial_saturation_margin_db =
-		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_INITIAL_SATURATION_MARGIN_DB);
-	config->gain_controller2.adaptive_digital.extra_saturation_margin_db =
-		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_EXTRA_SATURATION_MARGIN_DB);
-	config->gain_controller2.adaptive_digital.gain_applier_adjacent_speech_frames_threshold =
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_GAIN_APPLIER_ADJACENT_SPEECH_FRAMES_THRESHOLD);
+	config->gain_controller2.adaptive_digital.dry_run =
+		APM_GET_INT(ini, ADAPTIVE_DIGITAL_DRY_RUN);
+	config->gain_controller2.adaptive_digital.headroom_db =
+		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_HEADROOM_DB);
+	config->gain_controller2.adaptive_digital.max_gain_db =
+		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_MAX_GAIN_DB);
+	config->gain_controller2.adaptive_digital.initial_gain_db =
+		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_INITIAL_GAIN_DB);
+	config->gain_controller2.adaptive_digital.vad_reset_period_ms =
+		APM_GET_INT(ini, ADAPTIVE_DIGITAL_VAD_RESET_PERIOD_MS);
+	config->gain_controller2.adaptive_digital.adjacent_speech_frames_threshold =
+		APM_GET_INT(ini, ADAPTIVE_DIGITAL_ADJACENT_SPEECH_FRAMES_THRESHOLD);
 	config->gain_controller2.adaptive_digital.max_gain_change_db_per_second =
 		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_MAX_GAIN_CHANGE_DB_PER_SECOND);
 	config->gain_controller2.adaptive_digital.max_output_noise_level_dbfs =
 		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_MAX_OUTPUT_NOISE_LEVEL_DBFS);
-	config->gain_controller2.adaptive_digital.sse2_allowed =
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_SSE2_ALLOWED);
-	config->gain_controller2.adaptive_digital.avx2_allowed =
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_AVX2_ALLOWED);
-	config->gain_controller2.adaptive_digital.neon_allowed =
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_NEON_ALLOWED);
 
 	/* Keys for AudioProcessing::ResidualEchoDetector */
 	config->residual_echo_detector.enabled =
 		APM_GET_INT(ini, APM_RESIDUAL_ECHO_DETECTOR_ENABLED);
-
-	/* Keys for AudioProcessing::LevelEstimation */
-	config->level_estimation.enabled =
-		APM_GET_INT(ini, APM_LEVEL_ESTIMATION_ENABLED);
 
 }
 
@@ -241,10 +254,6 @@ void apm_config_dump(dictionary *ini)
 		APM_GET_INT(ini, APM_GAIN_CONTROL_COMPRESSION_GAIN_DB));
 	syslog(LOG_ERR, "gain_control_enable_limiter %d",
 		APM_GET_INT(ini, APM_GAIN_CONTROL_ENABLE_LIMITER));
-	syslog(LOG_ERR, "gain_control_analog_level_minimum %d",
-		APM_GET_INT(ini, APM_GAIN_CONTROL_ANALOG_LEVEL_MINIMUM));
-	syslog(LOG_ERR, "gain_control_analog_level_maximumc %d",
-		APM_GET_INT(ini, APM_GAIN_CONTROL_ANALOG_LEVEL_MAXIMUM));
 
 	/* Keys for AudioProcessing::GainController1::AnalogGainController */
 	syslog(LOG_ERR, "analog_gain_controller_enabled %d",
@@ -255,6 +264,41 @@ void apm_config_dump(dictionary *ini)
 		APM_GET_INT(ini, APM_ANALOG_GAIN_CONTROLLER_CLIPPED_LEVEL_MIN));
 	syslog(LOG_ERR, "analog_gain_controller_enable_digital_adaptive %d",
 		APM_GET_INT(ini, APM_ANALOG_GAIN_CONTROLLER_ENABLE_DIGITAL_ADAPTIVE));
+	syslog(LOG_ERR, "analog_gain_controller_clipped_level_step %d",
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPED_LEVEL_STEP));
+	syslog(LOG_ERR, "analog_gain_controller_clipped_ratio_threshold %f",
+		APM_GET_FLOAT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPED_RATIO_THRESHOLD));
+	syslog(LOG_ERR, "analog_gain_controller_clipped_wait_frames %d",
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPED_WAIT_FRAMES));
+	syslog(LOG_ERR, "analog_gain_controller_clipping_predictor_enabled %d",
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_ENABLED));
+	syslog(LOG_ERR, "analog_gain_controller_clipping_predictor_mode %d",
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_MODE));
+	syslog(LOG_ERR, "analog_gain_controller_clipping_predictor_window_length %d",
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_WINDOW_LENGTH));
+	syslog(LOG_ERR, "analog_gain_controller_clipping_predictor_reference_window_length %d",
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_REFERENCE_WINDOW_LENGTH));
+	syslog(LOG_ERR, "analog_gain_controller_clipping_predictor_reference_window_delay %d",
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_REFERENCE_WINDOW_DELAY));
+	syslog(LOG_ERR, "analog_gain_controller_clipping_predictor_clipping_threshold %f",
+		APM_GET_FLOAT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_CLIPPING_THRESHOLD));
+	syslog(LOG_ERR, "analog_gain_controller_clipping_predictor_crest_factor_margin %f",
+		APM_GET_FLOAT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_CREST_FACTOR_MARGIN));
+	syslog(LOG_ERR, "analog_gain_controller_clipping_predictor_use_predicted_step %d",
+		APM_GET_INT(ini,
+			APM_ANALOG_GAIN_CONTROLLER_CLIPPING_PREDICTOR_USE_PREDICTED_STEP));
+
+
 
 	/* Keys for AudioProcessing::GainController2 */
 	syslog(LOG_ERR, "gain_controller2_enabled %u",
@@ -267,37 +311,24 @@ void apm_config_dump(dictionary *ini)
 	/* Keys for AudioProcessing::GainController2::AdaptiveDigital */
 	syslog(LOG_ERR, "adaptive_digital_enabled %d",
 		APM_GET_INT(ini, ADAPTIVE_DIGITAL_ENABLED));
-	syslog(LOG_ERR, "adaptive_digital_vad_probability_attack %f",
-		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_VAD_PROBABILITY_ATTACK));
-	syslog(LOG_ERR, "adaptive_digital_level_estimator %d",
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_LEVEL_ESTIMATOR));
-	syslog(LOG_ERR, "adaptive_digital_level_estimator_adjacent_speech_frames_threshold %d",
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_LEVEL_ESTIMATOR_ADJACENT_SPEECH_FRAMES_THRESHOLD));
-	syslog(LOG_ERR, "adaptive_digital_use_saturation_protector %d",
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_USE_SATURATION_PROTECTOR));
-	syslog(LOG_ERR, "adaptive_digital_initial_saturation_margin_db %f",
-		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_INITIAL_SATURATION_MARGIN_DB));
-	syslog(LOG_ERR, "adaptive_digital_extra_saturation_margin_db %f",
-		APM_GET_FLOAT(ini,
-			ADAPTIVE_DIGITAL_EXTRA_SATURATION_MARGIN_DB));
-	syslog(LOG_ERR, "adaptive_digital_gain_applier_adjacent_speech_frames_threshold %d",
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_GAIN_APPLIER_ADJACENT_SPEECH_FRAMES_THRESHOLD));
+	syslog(LOG_ERR, "adaptive_digital_dry_run %d",
+		APM_GET_INT(ini, ADAPTIVE_DIGITAL_DRY_RUN));
+	syslog(LOG_ERR, "adaptive_digital_headroom_db %f",
+		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_HEADROOM_DB));
+	syslog(LOG_ERR, "adaptive_digital_max_gain_db %f",
+		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_MAX_GAIN_DB));
+	syslog(LOG_ERR, "adaptive_digital_initial_gain_db %f",
+		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_INITIAL_GAIN_DB));
+	syslog(LOG_ERR, "adaptive_digital_vad_reset_period_ms %d",
+		APM_GET_INT(ini, ADAPTIVE_DIGITAL_VAD_RESET_PERIOD_MS));
+	syslog(LOG_ERR, "adaptive_digital_adjacent_speech_frames_threshold %d",
+		APM_GET_INT(ini, ADAPTIVE_DIGITAL_ADJACENT_SPEECH_FRAMES_THRESHOLD));
 	syslog(LOG_ERR, "adaptive_digital_max_gain_change_db_per_second %f",
 		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_MAX_GAIN_CHANGE_DB_PER_SECOND));
 	syslog(LOG_ERR, "adaptive_digital_max_output_noise_level_dbfs %f",
 		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_MAX_OUTPUT_NOISE_LEVEL_DBFS));
-	syslog(LOG_ERR, "adaptive_digital_sse2_allowed %d",
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_SSE2_ALLOWED));
-	syslog(LOG_ERR, "adaptive_digital_avx2_allowed %d",
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_AVX2_ALLOWED));
-	syslog(LOG_ERR, "adaptive_digital_neon_allowed %d",
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_NEON_ALLOWED));
 
 	/* Keys for AudioProcessing::ResidualEchoDetector */
 	syslog(LOG_ERR, "residual_echo_detector_enabled %u",
 		APM_GET_INT(ini, APM_RESIDUAL_ECHO_DETECTOR_ENABLED));
-
-	/* Keys for AudioProcessing::LevelEstimation */
-	syslog(LOG_ERR, "level_estimation_enabled %d",
-		APM_GET_INT(ini, APM_LEVEL_ESTIMATION_ENABLED));
 }

@@ -6,6 +6,9 @@ include common.mk
 
 absl_CXX_OBJECTS = \
 	absl/base/internal/raw_logging.o \
+	absl/base/internal/throw_delegate.o \
+	absl/strings/string_view.o \
+	absl/strings/internal/memutil.o \
 	absl/types/bad_optional_access.o
 
 # CXX_STATIC_LIBRARY(absl.pic.a): \
