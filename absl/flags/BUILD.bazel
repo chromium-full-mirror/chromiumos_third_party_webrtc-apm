@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load(
     "//absl:copts/configure_copts.bzl",
     "ABSL_DEFAULT_COPTS",
@@ -205,6 +204,7 @@ cc_library(
         "//absl/base",
         "//absl/base:config",
         "//absl/base:core_headers",
+        "//absl/base:dynamic_annotations",
         "//absl/memory",
         "//absl/meta:type_traits",
         "//absl/strings",
@@ -217,6 +217,7 @@ cc_library(
     name = "flag",
     srcs = [
         "flag.cc",
+        "internal/flag_msvc.inc",
     ],
     hdrs = [
         "declare.h",
@@ -259,6 +260,7 @@ cc_library(
         ":reflection",
         "//absl/base:config",
         "//absl/base:core_headers",
+        "//absl/container:flat_hash_map",
         "//absl/strings",
     ],
 )

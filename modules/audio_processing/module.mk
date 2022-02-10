@@ -7,6 +7,10 @@ include common.mk
 module_audio_processing_CXX_OBJECTS = \
 	modules/audio_processing/agc/agc.o \
 	modules/audio_processing/agc/agc_manager_direct.o \
+	modules/audio_processing/agc/analog_gain_stats_reporter.o \
+	modules/audio_processing/agc/clipping_predictor.o \
+	modules/audio_processing/agc/clipping_predictor_evaluator.o \
+	modules/audio_processing/agc/clipping_predictor_level_buffer.o \
 	modules/audio_processing/agc/loudness_histogram.o \
 	modules/audio_processing/agc/utility.o \
 	modules/audio_processing/audio_buffer.o \
@@ -21,8 +25,6 @@ module_audio_processing_CXX_OBJECTS = \
 	modules/audio_processing/gain_controller2.o \
 	modules/audio_processing/high_pass_filter.o \
 	modules/audio_processing/include/audio_processing.o \
-	modules/audio_processing/include/config.o \
-	modules/audio_processing/level_estimator.o \
 	modules/audio_processing/optionally_built_submodule_creators.o \
 	modules/audio_processing/residual_echo_detector.o \
 	modules/audio_processing/rms_level.o \
@@ -84,31 +86,23 @@ aec3_config_CXX_OBJECTS = \
 	api/audio/echo_canceller3_config.o
 
 agc2_CXX_OBJECTS = \
-	modules/audio_processing/agc2/adaptive_agc.o \
 	modules/audio_processing/agc2/adaptive_digital_gain_applier.o \
+	modules/audio_processing/agc2/adaptive_digital_gain_controller.o \
 	modules/audio_processing/agc2/adaptive_mode_level_estimator.o \
+	modules/audio_processing/agc2/agc2_testing_common.o \
 	modules/audio_processing/agc2/biquad_filter.o \
 	modules/audio_processing/agc2/compute_interpolated_gain_curve.o \
-	modules/audio_processing/agc2/down_sampler.o \
+	modules/audio_processing/agc2/cpu_features.o \
 	modules/audio_processing/agc2/fixed_digital_level_estimator.o \
 	modules/audio_processing/agc2/gain_applier.o \
 	modules/audio_processing/agc2/interpolated_gain_curve.o \
 	modules/audio_processing/agc2/limiter.o \
 	modules/audio_processing/agc2/limiter_db_gain_curve.o \
 	modules/audio_processing/agc2/noise_level_estimator.o \
-	modules/audio_processing/agc2/noise_spectrum_estimator.o \
+	modules/audio_processing/agc2/saturation_protector_buffer.o \
 	modules/audio_processing/agc2/saturation_protector.o \
-	modules/audio_processing/agc2/signal_classifier.o \
-	modules/audio_processing/agc2/vad_with_level.o \
+	modules/audio_processing/agc2/vad_wrapper.o \
 	modules/audio_processing/agc2/vector_float_frame.o \
-	modules/audio_processing/agc2/rnn_vad/auto_correlation.o \
-	modules/audio_processing/agc2/rnn_vad/features_extraction.o \
-	modules/audio_processing/agc2/rnn_vad/lp_residual.o \
-	modules/audio_processing/agc2/rnn_vad/pitch_search.o \
-	modules/audio_processing/agc2/rnn_vad/pitch_search_internal.o \
-	modules/audio_processing/agc2/rnn_vad/rnn.o \
-	modules/audio_processing/agc2/rnn_vad/spectral_features.o \
-	modules/audio_processing/agc2/rnn_vad/spectral_features_internal.o \
 	modules/audio_processing/utility/pffft_wrapper.o \
 	third_party/pffft/src/pffft.o \
 	third_party/rnnoise/src/rnn_vad_weights.o
