@@ -7,6 +7,7 @@ include pc_utils.mk
 
 LDFLAGS += -Wl,-z,defs
 CPPFLAGS += -DWEBRTC_POSIX
+CXXFLAGS += -std=c++17
 
 ifeq (${USE_NEON},1)
 CPPFLAGS += -DWEBRTC_HAS_NEON
