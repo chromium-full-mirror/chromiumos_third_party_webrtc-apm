@@ -60,7 +60,6 @@ webrtc_apm webrtc_apm_create_with_enforced_effects(
 	webrtc::AudioProcessing::ChannelLayout channel_layout;
 	webrtc::AudioProcessingBuilder apm_builder;
 	webrtc::EchoCanceller3Config aec3_config;
-	std::unique_ptr<webrtc::EchoControlFactory> ec3_factory;
 
 	switch (num_channels) {
 		case 1:
@@ -76,13 +75,11 @@ webrtc_apm webrtc_apm_create_with_enforced_effects(
 	/* Set the AEC-tunings. */
 	if (aec_ini) {
 		aec_config_get(aec_ini, &aec3_config);
+                std::unique_ptr<webrtc::EchoControlFactory> ec3_factory;
 		ec3_factory.reset(
 			new webrtc::EchoCanceller3Factory(aec3_config));
-	} else {
-		ec3_factory.reset(new webrtc::EchoCanceller3Factory());
+		apm_builder.SetEchoControlFactory(std::move(ec3_factory));
 	}
-
-	apm_builder.SetEchoControlFactory(std::move(ec3_factory));
 
 	apm_refptr = new rtc::scoped_refptr<webrtc::AudioProcessing>();
 	*apm_refptr = apm_builder.Create();
