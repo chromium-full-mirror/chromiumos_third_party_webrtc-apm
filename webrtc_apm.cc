@@ -3,6 +3,14 @@
  * found in the LICENSE file.
  */
 
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+
+#ifdef HAVE_FEATURED
+#include <featured/c_feature_library.h>
+#endif
 #include <metrics/metrics_library.h>
 
 #include "api/audio/echo_canceller3_factory.h"
@@ -25,6 +33,79 @@ using webrtc::metrics::SampleInfo;
 static std::string hist_name_prefix_;
 static std::unique_ptr<MetricsLibraryInterface> metrics_lib_;
 
+#if !defined(HAVE_FEATURED) || defined(BYPASS_FEATURE_CHECK)
+static WebRtcApmFeatures get_webrtc_apm_features() {
+  WebRtcApmFeatures features;
+  features.agc2_enabled = false;
+  return features;
+}
+#else
+const struct Feature WEBRTC_APM_AGC2_FEATURE = {
+    .name = "CrOSWebRTCApmAgc2",
+    .default_state = FEATURE_DISABLED_BY_DEFAULT,
+};
+
+static WebRtcApmFeatures get_webrtc_apm_features() {
+  WebRtcApmFeatures features;
+  CFeatureLibrary lib = CFeatureLibraryNew();
+
+  features.agc2_enabled =
+      CFeatureLibraryIsEnabledBlocking(lib, &WEBRTC_APM_AGC2_FEATURE);
+  syslog(LOG_DEBUG, "Chrome Feature Service: %s = %d", AGC2_FEATURE.name,
+         features.agc2_enabled);
+
+  CFeatureLibraryDelete(lib);
+  return features;
+}
+#endif
+
+/* Sets the AGC1 and AGC2 configurations based on whether AGC2 must be used and
+ * returns true if the configuration has changed. Handles hybrid configurations
+ * when `use_agc2` is false, but an AGC2 fixed digital gain is specificied in
+ * `agc2_config`.
+ * TODO(crbug.com/1318461): Until analog AGC2 ready, only set `use_agc2` to true
+ * for testing purposes.
+ */
+bool configure_gain_controllers(
+    webrtc::AudioProcessing::Config::GainController1* agc1_config,
+    webrtc::AudioProcessing::Config::GainController2* agc2_config,
+    bool use_agc2) {
+  bool config_changed = false;
+  if (use_agc2) {
+    config_changed = agc1_config->enabled || !agc2_config->enabled ||
+                     !agc2_config->adaptive_digital.enabled;
+
+    // Disable AGC1; only one AGC must be active.
+    agc1_config->enabled = false;
+    // Enable AGC2 and its adaptive digital gain controller.
+    // The fixed digital gain configuration is not overridden since `apm_ini`
+    // may include device specific tunings.
+    agc2_config->enabled = true;
+    agc2_config->adaptive_digital.enabled = true;
+    // TODO(crbug.com/1318461): Enable AGC2 analog once available.
+  } else {
+    config_changed = !agc1_config->enabled;
+
+    // Enable AGC1.
+    agc1_config->enabled = true;
+    agc1_config->mode =
+        webrtc::AudioProcessing::Config::GainController1::Mode::kAdaptiveAnalog;
+    // Disable AGC2; only one AGC must be active.
+    if (agc2_config->fixed_digital.gain_db == 0.0f) {
+      config_changed = config_changed || agc2_config->enabled;
+      // When the AGC2 fixed digital is not used, entirely disable AGC2.
+      agc2_config->enabled = false;
+    } else {
+      config_changed = config_changed || agc2_config->adaptive_digital.enabled;
+      // Explicitly disable AGC2 adaptive controllers, but do not entirely
+      // disable AGC2 since it might be used to apply a fixed digital gain.
+      agc2_config->adaptive_digital.enabled = false;
+      // TODO(crbug.com/1318461): Disable AGC2 analog once available.
+    }
+  }
+  return config_changed;
+}
+
 void webrtc_apm_init_metrics(const char *prefix) {
   if (prefix == NULL) return;
 
@@ -33,16 +114,11 @@ void webrtc_apm_init_metrics(const char *prefix) {
   metrics_lib_ = std::make_unique<MetricsLibrary>();
 }
 
-webrtc_apm webrtc_apm_create(unsigned int num_channels, unsigned int frame_rate,
-                             dictionary *aec_ini, dictionary *apm_ini) {
-  return webrtc_apm_create_with_enforced_effects(num_channels, frame_rate,
-                                                 aec_ini, apm_ini, 0, 0, 0);
-}
-
-webrtc_apm webrtc_apm_create_with_enforced_effects(
+static webrtc_apm webrtc_apm_create(
     unsigned int num_channels, unsigned int frame_rate, dictionary *aec_ini,
     dictionary *apm_ini, unsigned int enforce_aec_on,
-    unsigned int enforce_ns_on, unsigned int enforce_agc_on) {
+    unsigned int enforce_ns_on, unsigned int enforce_agc_on,
+    WebRtcApmFeatures features) {
   int err;
   rtc::scoped_refptr<webrtc::AudioProcessing> *apm_refptr;
   webrtc::AudioProcessing *apm;
@@ -98,11 +174,11 @@ webrtc_apm webrtc_apm_create_with_enforced_effects(
   }
 
   if (enforce_agc_on == 1) {
-    config.gain_controller1.enabled = true;
-    config.gain_controller1.mode =
-        webrtc::AudioProcessing::Config::GainController1::Mode::kAdaptiveAnalog;
     config.capture_level_adjustment.enabled = true;
     config.capture_level_adjustment.analog_mic_gain_emulation.enabled = true;
+    configure_gain_controllers(/*agc1_config=*/&config.gain_controller1,
+                               /*agc2_config=*/&config.gain_controller2,
+                               /*use_agc2=*/features.agc2_enabled);
     config_changed = true;
   }
 
@@ -120,6 +196,26 @@ webrtc_apm webrtc_apm_create_with_enforced_effects(
   return reinterpret_cast<webrtc_apm>(apm_refptr);
 }
 
+
+webrtc_apm webrtc_apm_create_with_enforced_effects(
+    unsigned int num_channels, unsigned int frame_rate, dictionary *aec_ini,
+    dictionary *apm_ini, unsigned int enforce_aec_on,
+    unsigned int enforce_ns_on, unsigned int enforce_agc_on) {
+  return webrtc_apm_create(
+      num_channels, frame_rate, aec_ini, apm_ini, enforce_aec_on, enforce_ns_on,
+      enforce_agc_on, get_webrtc_apm_features());
+}
+
+webrtc_apm webrtc_apm_create_for_testing(
+    unsigned int num_channels, unsigned int frame_rate, dictionary *aec_ini,
+    dictionary *apm_ini, unsigned int enforce_aec_on,
+    unsigned int enforce_ns_on, unsigned int enforce_agc_on,
+    WebRtcApmFeatures features) {
+  return webrtc_apm_create(
+      num_channels, frame_rate, aec_ini, apm_ini, enforce_aec_on, enforce_ns_on,
+      enforce_agc_on, features);
+}
+
 WEBRTC_APM_API void webrtc_apm_enable_effects(webrtc_apm ptr, bool enable_aec,
                                               bool enable_ns, bool enable_agc) {
   rtc::scoped_refptr<webrtc::AudioProcessing> *apm_refptr =
@@ -127,6 +223,8 @@ WEBRTC_APM_API void webrtc_apm_enable_effects(webrtc_apm ptr, bool enable_aec,
   webrtc::AudioProcessing *apm = apm_refptr->get();
   webrtc::AudioProcessing::Config config = apm->GetConfig();
   bool config_changed = false;
+
+  WebRtcApmFeatures features = get_webrtc_apm_features();
 
   config_changed = config.echo_canceller.enabled != enable_aec;
   config.echo_canceller.enabled = enable_aec;
@@ -138,6 +236,11 @@ WEBRTC_APM_API void webrtc_apm_enable_effects(webrtc_apm ptr, bool enable_aec,
   config_changed =
       config_changed || config.gain_controller1.enabled != enable_agc;
   config.gain_controller1.enabled = enable_agc;
+
+  config_changed = config_changed || configure_gain_controllers(
+      /*agc1_config=*/&config.gain_controller1,
+      /*agc2_config=*/&config.gain_controller2,
+      /*use_agc2=*/features.agc2_enabled);
 
   if (config_changed) {
     apm->ApplyConfig(config);
