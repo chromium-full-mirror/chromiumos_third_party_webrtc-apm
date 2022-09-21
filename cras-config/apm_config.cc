@@ -25,7 +25,7 @@ void apm_config_set(dictionary *ini, webrtc::AudioProcessing::Config *config)
 	if (ini == NULL)
 		return;
 
-        syslog(LOG_ERR, "Reading APM ini");
+        syslog(LOG_INFO, "Reading APM ini");
 
 	/* Keys for AudioProcessing::Pipeline */
 	config->pipeline.maximum_internal_processing_rate =
