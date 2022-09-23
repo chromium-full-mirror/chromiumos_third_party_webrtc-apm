@@ -104,6 +104,12 @@ WEBRTC_APM_API void webrtc_apm_enable_effects(webrtc_apm ptr,
                                               bool enable_ns,
                                               bool enable_agc);
 
+/* Enables/disables voice activity detection in a wenrtc_apm.
+ * This should be called in the same thread that calls webrtc_apm_enable_effects
+ * to avoid erroneous config.
+ */
+WEBRTC_APM_API void webrtc_apm_enable_vad(webrtc_apm ptr, bool enable_vad);
+
 /* Dumps configs content.
  * Args:
  *    apm_ini - APM config file in ini format.
@@ -128,6 +134,10 @@ WEBRTC_APM_API int webrtc_apm_process_stream_f(webrtc_apm ptr,
                                                int num_channels,
                                                int rate,
                                                float *const *data);
+
+/* Gets the detected voice activity if vad has been enabled.
+ */
+WEBRTC_APM_API int webrtc_apm_get_voice_detected(webrtc_apm ptr);
 
 /* Sets the delay in ms between apm analyzes a frame in reverse stream
  * (playback) and this frame received as echo in forward stream (record)

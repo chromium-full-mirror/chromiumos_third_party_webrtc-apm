@@ -216,6 +216,16 @@ webrtc_apm webrtc_apm_create_for_testing(
       enforce_agc_on, features);
 }
 
+void webrtc_apm_enable_vad(webrtc_apm ptr, bool enable_vad) {
+  rtc::scoped_refptr<webrtc::AudioProcessing> *apm_refptr =
+      reinterpret_cast<rtc::scoped_refptr<webrtc::AudioProcessing> *>(ptr);
+  webrtc::AudioProcessing *apm = apm_refptr->get();
+  webrtc::AudioProcessing::Config config = apm->GetConfig();
+
+  config.voice_detection.enabled = 1;
+  apm->ApplyConfig(config);
+}
+
 WEBRTC_APM_API void webrtc_apm_enable_effects(webrtc_apm ptr, bool enable_aec,
                                               bool enable_ns, bool enable_agc) {
   rtc::scoped_refptr<webrtc::AudioProcessing> *apm_refptr =
@@ -270,6 +280,13 @@ int webrtc_apm_process_stream_f(webrtc_apm ptr, int num_channels, int rate,
       reinterpret_cast<rtc::scoped_refptr<webrtc::AudioProcessing> *>(ptr);
   webrtc::AudioProcessing *apm = apm_refptr->get();
   return apm->ProcessStream(data, iconfig, oconfig, data);
+}
+
+int webrtc_apm_get_voice_detected(webrtc_apm ptr) {
+  rtc::scoped_refptr<webrtc::AudioProcessing> *apm_refptr =
+      reinterpret_cast<rtc::scoped_refptr<webrtc::AudioProcessing> *>(ptr);
+  webrtc::AudioProcessing *apm = apm_refptr->get();
+  return apm->GetStatistics().voice_detected.value_or(false);
 }
 
 void webrtc_apm_destroy(webrtc_apm ptr) {
