@@ -24,7 +24,7 @@ void aec_config_get(dictionary *ini, webrtc::EchoCanceller3Config *config)
 	if (ini == NULL)
 		return;
 
-       syslog(LOG_ERR, "Reading AEC3 ini");
+       syslog(LOG_INFO, "Reading AEC3 ini");
 
 	/* Keys for EchoCanceller3Config:Buffering */
 	config->buffering.excess_render_detection_interval_blocks =
