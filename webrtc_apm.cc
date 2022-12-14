@@ -1,4 +1,4 @@
-/* Copyright 2018 The Chromium OS Authors. All rights reserved.
+/* Copyright 2018 The ChromiumOS Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -222,7 +222,7 @@ void webrtc_apm_enable_vad(webrtc_apm ptr, bool enable_vad) {
   webrtc::AudioProcessing *apm = apm_refptr->get();
   webrtc::AudioProcessing::Config config = apm->GetConfig();
 
-  config.voice_detection.enabled = 1;
+  config.voice_detection.enabled = enable_vad;
   apm->ApplyConfig(config);
 }
 
