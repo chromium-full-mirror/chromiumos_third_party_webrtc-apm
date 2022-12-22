@@ -69,8 +69,20 @@ static WebRtcApmFeatures get_webrtc_apm_features() {
 bool configure_gain_controllers(
     webrtc::AudioProcessing::Config::GainController1* agc1_config,
     webrtc::AudioProcessing::Config::GainController2* agc2_config,
-    bool use_agc2) {
+    bool use_agc2,
+    bool enable_agc) {
   bool config_changed = false;
+
+  if (!enable_agc) {
+      config_changed =
+          config_changed || agc1_config->enabled != enable_agc;
+      config_changed =
+          config_changed || agc2_config->enabled != enable_agc;
+      agc2_config->enabled = false;
+      agc2_config->enabled = false;
+      return config_changed;
+  }
+
   if (use_agc2) {
     config_changed = agc1_config->enabled || !agc2_config->enabled ||
                      !agc2_config->adaptive_digital.enabled;
@@ -178,7 +190,8 @@ static webrtc_apm webrtc_apm_create(
     config.capture_level_adjustment.analog_mic_gain_emulation.enabled = true;
     configure_gain_controllers(/*agc1_config=*/&config.gain_controller1,
                                /*agc2_config=*/&config.gain_controller2,
-                               /*use_agc2=*/features.agc2_enabled);
+                               /*use_agc2=*/features.agc2_enabled,
+                               /*enable_agc=*/true);
     config_changed = true;
   }
 
@@ -250,7 +263,7 @@ WEBRTC_APM_API void webrtc_apm_enable_effects(webrtc_apm ptr, bool enable_aec,
   config_changed = config_changed || configure_gain_controllers(
       /*agc1_config=*/&config.gain_controller1,
       /*agc2_config=*/&config.gain_controller2,
-      /*use_agc2=*/features.agc2_enabled);
+      /*use_agc2=*/features.agc2_enabled, enable_agc);
 
   if (config_changed) {
     apm->ApplyConfig(config);
