@@ -1,0 +1,66 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("//:defs.bzl", "COPTS")
+
+cc_library(
+    name = "webrtc_apm",
+    srcs = ["webrtc_apm.cc"],
+    hdrs = ["webrtc_apm.h"],
+    copts = COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cras-config",
+        "//modules/audio_processing",
+        "//repositories:metrics_library",
+    ],
+)
+
+cc_test(
+    name = "webrtc_apm_test",
+    srcs = ["webrtc_apm_test.cc"],
+    copts = COPTS,
+    linkopts = ["-lm"],
+    deps = [
+        ":webrtc_apm",
+        "@pkg_config//gtest",
+        "@pkg_config//gtest_main",
+    ],
+)
+
+# Tests that are run with the media-sound/adhd ebuild.
+test_suite(
+    name = "tests",
+    tests = [
+        ":webrtc_apm_test",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+bool_flag(
+    name = "neon",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "neon_build",
+    flag_values = {
+        ":neon": "true",
+    },
+    visibility = ["//:__subpackages__"],
+)
+
+bool_flag(
+    name = "chromiumos",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "chromiumos_build",
+    flag_values = {
+        ":chromiumos": "true",
+    },
+    visibility = ["//:__subpackages__"],
+)

@@ -1,0 +1,66 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+load("//:defs.bzl", "COPTS")
+
+package(default_visibility = ["//:__subpackages__"])
+
+cc_library(
+    name = "headers",
+    hdrs = [
+        "adaptive_digital_gain_applier.h",
+        "adaptive_digital_gain_controller.h",
+        "adaptive_mode_level_estimator.h",
+        "agc2_common.h",
+        "agc2_testing_common.h",
+        "biquad_filter.h",
+        "compute_interpolated_gain_curve.h",
+        "cpu_features.h",
+        "fixed_digital_level_estimator.h",
+        "gain_applier.h",
+        "interpolated_gain_curve.h",
+        "limiter.h",
+        "limiter_db_gain_curve.h",
+        "noise_level_estimator.h",
+        "saturation_protector.h",
+        "saturation_protector_buffer.h",
+        "vad_wrapper.h",
+        "vector_float_frame.h",
+    ],
+    copts = COPTS,
+)
+
+cc_library(
+    name = "agc2",
+    srcs = [
+        "adaptive_digital_gain_applier.cc",
+        "adaptive_digital_gain_controller.cc",
+        "adaptive_mode_level_estimator.cc",
+        "agc2_testing_common.cc",
+        "biquad_filter.cc",
+        "compute_interpolated_gain_curve.cc",
+        "cpu_features.cc",
+        "fixed_digital_level_estimator.cc",
+        "gain_applier.cc",
+        "interpolated_gain_curve.cc",
+        "limiter.cc",
+        "limiter_db_gain_curve.cc",
+        "noise_level_estimator.cc",
+        "saturation_protector.cc",
+        "saturation_protector_buffer.cc",
+        "vad_wrapper.cc",
+        "vector_float_frame.cc",
+    ],
+    copts = COPTS,
+    deps = [
+        ":headers",
+        "//absl/types:optional",
+        "//api:headers",
+        "//common_audio",
+        "//modules/audio_processing:headers",
+        "//modules/audio_processing/agc2/rnn_vad",
+        "//rtc_base:headers",
+        "//system_wrappers",
+    ],
+)

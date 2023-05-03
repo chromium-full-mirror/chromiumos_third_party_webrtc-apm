@@ -1,0 +1,47 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+load("//:defs.bzl", "COPTS")
+
+package(default_visibility = ["//:__subpackages__"])
+
+cc_library(
+    name = "headers",
+    hdrs = [
+        "include/clock.h",
+        "include/cpu_features_wrapper.h",
+        "include/cpu_info.h",
+        "include/denormal_disabler.h",
+        "include/field_trial.h",
+        "include/metrics.h",
+        "include/ntp_time.h",
+        "include/rtp_to_ntp_estimator.h",
+        "include/sleep.h",
+    ],
+    copts = COPTS,
+)
+
+cc_library(
+    name = "system_wrappers",
+    srcs = [
+        "source/clock.cc",
+        "source/cpu_features.cc",
+        "source/cpu_info.cc",
+        "source/denormal_disabler.cc",
+        "source/field_trial.cc",
+        "source/metrics.cc",
+        "source/rtp_to_ntp_estimator.cc",
+        "source/sleep.cc",
+    ],
+    copts = COPTS,
+    deps = [
+        ":headers",
+        "//absl/meta:type_traits",
+        "//absl/strings",
+        "//absl/types:optional",
+        "//api:headers",
+        "//modules:headers",
+        "//rtc_base:headers",
+    ],
+)

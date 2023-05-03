@@ -1,0 +1,9 @@
+# Config for local builds
+# This file is ignored when building for ChromiumOS
+
+build --conlyopt=-std=gnu11
+build --cxxopt=-std=gnu++17
+build --copt=-Wall --copt=-Werror
+
+# --config=local-clang: Use system clang to build.
+build:local-clang --action_env=CC=clang --action_env=CXX=clang++

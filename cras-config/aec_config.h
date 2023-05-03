@@ -1,4 +1,5 @@
-/* Copyright 2018 The Chromium OS Authors. All rights reserved.
+/*
+ * Copyright 2023 The ChromiumOS Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -6,7 +7,9 @@
 #ifndef AEC_CONFIG_H_
 #define AEC_CONFIG_H_
 
+extern "C" {
 #include <iniparser.h>
+}
 
 #include "api/audio/echo_canceller3_config.h"
 

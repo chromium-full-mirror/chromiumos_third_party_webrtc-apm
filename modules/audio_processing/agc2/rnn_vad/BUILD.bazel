@@ -1,0 +1,69 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+load("//:defs.bzl", "AVX2_COPTS", "COPTS", "X64_ONLY", "select_x64")
+
+package(default_visibility = ["//:__subpackages__"])
+
+cc_library(
+    name = "headers",
+    hdrs = [
+        "auto_correlation.h",
+        "common.h",
+        "features_extraction.h",
+        "lp_residual.h",
+        "pitch_search.h",
+        "pitch_search_internal.h",
+        "ring_buffer.h",
+        "rnn.h",
+        "rnn_fc.h",
+        "rnn_gru.h",
+        "sequence_buffer.h",
+        "spectral_features.h",
+        "spectral_features_internal.h",
+        "symmetric_matrix_buffer.h",
+        "vector_math.h",
+    ],
+)
+
+cc_library(
+    name = "rnn_vad",
+    srcs = [
+        "auto_correlation.cc",
+        "features_extraction.cc",
+        "lp_residual.cc",
+        "pitch_search.cc",
+        "pitch_search_internal.cc",
+        "rnn.cc",
+        "rnn_fc.cc",
+        "rnn_gru.cc",
+        "spectral_features.cc",
+        "spectral_features_internal.cc",
+    ],
+    copts = COPTS,
+    deps = [
+        ":headers",
+        "//absl/strings",
+        "//api:headers",
+        "//modules/audio_processing:headers",
+        "//modules/audio_processing/agc2:headers",
+        "//modules/audio_processing/utility",
+        "//rtc_base:headers",
+        "//third_party/rnnoise",
+    ] + select_x64([
+        ":rnn_vad_avx2",
+    ]),
+)
+
+cc_library(
+    name = "rnn_vad_avx2",
+    srcs = ["vector_math_avx2.cc"],
+    copts = COPTS + AVX2_COPTS,
+    target_compatible_with = X64_ONLY,
+    deps = [
+        ":headers",
+        "//modules/audio_processing/agc2:headers",
+        "//rtc_base",
+    ],
+)

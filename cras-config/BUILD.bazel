@@ -1,0 +1,30 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+package(default_visibility = ["//:__subpackages__"])
+
+cc_library(
+    name = "cras-config",
+    srcs = [
+        "aec_config.cc",
+        "apm_config.cc",
+    ],
+    hdrs = [
+        "aec_config.h",
+        "apm_config.h",
+    ],
+    deps = [
+        "//modules/audio_processing",
+        "//rtc_base",
+        "@iniparser",
+    ],
+)
+
+dict(
+    name = "cras-config_test",
+    deps = [
+        ":cras-config",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

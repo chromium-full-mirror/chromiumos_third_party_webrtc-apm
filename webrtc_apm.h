@@ -1,10 +1,15 @@
-/* Copyright 2018 The Chromium OS Authors. All rights reserved.
+/*
+ * Copyright 2023 The ChromiumOS Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 #ifndef WEBRTC_APM_H_
 #define WEBRTC_APM_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <iniparser.h>
 #include <stdbool.h>
@@ -160,5 +165,9 @@ WEBRTC_APM_API int webrtc_apm_aec_dump(webrtc_apm ptr,
                                        void **work_queue,
                                        int start,
                                        FILE *handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* WEBRTC_APM_H_ */
