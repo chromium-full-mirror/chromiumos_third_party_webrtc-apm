@@ -23,8 +23,10 @@ To update this package to latest upstream WebRC:
 * Otherwise look into the emerge failure, and then possibly:
   * Update sync-apm.sh to copy more files if upstream directory structure changes.
   * Update BUILD.bazel files if upstream build files has changed.
-  * Update webrtc-apm ebuild file if dependencies changed.
+  * Update the [adhd ebuild file] if dependencies changed.
 * Create a new commit
+
+[adhd ebuild file]: https://source.chromium.org/chromiumos/chromiumos/codesearch/+/main:src/third_party/chromiumos-overlay/media-sound/adhd/adhd-9999.ebuild
 
 # Build
 
