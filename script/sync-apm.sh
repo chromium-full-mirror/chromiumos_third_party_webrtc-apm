@@ -1,6 +1,5 @@
 #!/bin/bash
-
-# Copyright 2018 The Chromium OS Authors. All rights reserved.
+# Copyright 2018 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -39,8 +38,6 @@ rsync "${OPTIONS[@]}" ${FROM}/modules/video_coding/codecs/vp8/include \
 mkdir -p ${TO}/modules/video_coding/codecs/vp9
 rsync "${OPTIONS[@]}" ${FROM}/modules/video_coding/codecs/vp9/include \
 	${TO}/modules/video_coding/codecs/vp9
-
-rsync "${OPTIONS[@]}" ${FROM}/third_party/abseil-cpp/absl ${TO}
 
 mkdir -p ${TO}/third_party
 rsync "${OPTIONS[@]}" ${FROM}/third_party/rnnoise \
