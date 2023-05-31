@@ -71,7 +71,7 @@ cc_library(
     ],
     copts = COPTS,
     deps = [
-        "//absl/types:optional",
+        "@com_google_absl//absl/types:optional",
     ],
 )
 

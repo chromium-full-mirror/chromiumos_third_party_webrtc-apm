@@ -26,6 +26,13 @@ http_archive(
 )
 
 http_archive(
+    name = "com_google_absl",
+    sha256 = "51d676b6846440210da48899e4df618a357e6e44ecde7106f1e44ea16ae8adc7",
+    strip_prefix = "abseil-cpp-20230125.3",
+    urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20230125.3.zip"],
+)
+
+http_archive(
     name = "com_github_google_benchmark",
     sha256 = "6430e4092653380d9dc4ccb45a1e2dc9259d581f4866dc0759713126056bc1d7",
     strip_prefix = "benchmark-1.7.1",

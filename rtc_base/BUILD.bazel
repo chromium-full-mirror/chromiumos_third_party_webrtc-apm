@@ -78,8 +78,8 @@ cc_library(
         "units/unit_base.h",
         "zero_memory.h",
     ],
-    deps = ["//absl/strings"],
     copts = COPTS,
+    deps = ["@com_google_absl//absl/strings"],
 )
 
 cc_library(
@@ -119,15 +119,15 @@ cc_library(
         "timestamp_aligner.cc",
         "zero_memory.cc",
     ],
+    copts = COPTS,
     deps = [
         ":headers",
-        "//absl/base",
-        "//absl/container:inlined_vector",
-        "//absl/meta:type_traits",
-        "//absl/numeric:bits",
-        "//absl/types:optional",
         "//api:headers",
         "//api:task_queue",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/container:inlined_vector",
+        "@com_google_absl//absl/meta:type_traits",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/types:optional",
     ],
-    copts = COPTS,
 )

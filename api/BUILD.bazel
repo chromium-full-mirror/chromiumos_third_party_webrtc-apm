@@ -56,9 +56,9 @@ cc_library(
     copts = COPTS,
     deps = [
         ":headers",
-        "//absl/meta:type_traits",
-        "//absl/strings",
         "//rtc_base:headers",
+        "@com_google_absl//absl/meta:type_traits",
+        "@com_google_absl//absl/strings",
         "@pkg_config//libevent",
     ],
 )

@@ -55,12 +55,12 @@ cc_library(
     copts = COPTS,
     deps = [
         ":headers",
-        "//absl/types:optional",
         "//api:headers",
         "//common_audio",
         "//modules/audio_processing:headers",
         "//modules/audio_processing/agc2/rnn_vad",
         "//rtc_base:headers",
         "//system_wrappers",
+        "@com_google_absl//absl/types:optional",
     ],
 )
