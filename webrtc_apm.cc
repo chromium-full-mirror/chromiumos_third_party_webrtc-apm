@@ -11,7 +11,7 @@
 #ifdef HAVE_FEATURED
 #include <featured/c_feature_library.h>
 #endif
-#include <metrics/metrics_library.h>
+#include <metrics/c_metrics_library.h>
 
 #include "api/audio/echo_canceller3_factory.h"
 #include "api/task_queue/default_task_queue_factory.h"
@@ -31,7 +31,7 @@ extern "C" {
 using webrtc::metrics::SampleInfo;
 
 static std::string hist_name_prefix_;
-static std::unique_ptr<MetricsLibraryInterface> metrics_lib_;
+static CMetricsLibrary metrics_lib_handle = nullptr;
 
 #if !defined(HAVE_FEATURED) || defined(BYPASS_FEATURE_CHECK)
 static WebRtcApmFeatures get_webrtc_apm_features() {
@@ -123,7 +123,11 @@ void webrtc_apm_init_metrics(const char *prefix) {
 
   webrtc::metrics::Enable();
   hist_name_prefix_ = prefix;
-  metrics_lib_ = std::make_unique<MetricsLibrary>();
+
+  if (metrics_lib_handle) {
+    CMetricsLibraryDelete(metrics_lib_handle);
+  }
+  metrics_lib_handle = CMetricsLibraryNew();
 }
 
 static webrtc_apm webrtc_apm_create(
@@ -310,7 +314,7 @@ void webrtc_apm_destroy(webrtc_apm ptr) {
 
   std::map<std::string, std::unique_ptr<SampleInfo>> hist;
 
-  if (!metrics_lib_) return;
+  if (!metrics_lib_handle) return;
 
   webrtc::metrics::GetAndReset(&hist);
 
@@ -321,9 +325,11 @@ void webrtc_apm_destroy(webrtc_apm ptr) {
     /* info->samples stores <value, # of events> */
     for (auto sample = info->samples.begin(); sample != info->samples.end();
          sample++) {
-      for (int i = 0; i < sample->second; i++)
-        metrics_lib_->SendToUMA(name, sample->first, info->min, info->max,
-                                info->bucket_count);
+      for (int i = 0; i < sample->second; i++) {
+        CMetricsLibrarySendToUMA(metrics_lib_handle, name.c_str(),
+                                 sample->first, info->min, info->max,
+                                 info->bucket_count);
+      }
     }
   }
 }
