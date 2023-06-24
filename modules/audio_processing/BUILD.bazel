@@ -34,7 +34,6 @@ cc_library(
         "capture_levels_adjuster/audio_samples_scaler.h",
         "capture_levels_adjuster/capture_levels_adjuster.h",
         "common.h",
-        "debug.pb.h",
         "echo_control_mobile_impl.h",
         "echo_detector/circular_buffer.h",
         "echo_detector/mean_variance_estimator.h",
@@ -174,7 +173,7 @@ cc_library(
     }),
     copts = COPTS,
     deps = [
-        ":audioproc_debug_proto",
+        ":debug_cc_proto",
         ":headers",
         "//common_audio",
         "//modules/audio_coding",
@@ -185,22 +184,12 @@ cc_library(
     ],
 )
 
-# We link with system protobuf.
-# Generate them ourselves instead of using Bazel proto rules.
-genrule(
-    name = "debug_cc_proto_srcs",
+proto_library(
+    name = "debug_proto",
     srcs = ["debug.proto"],
-    outs = [
-        "debug.pb.cc",
-        "debug.pb.h",
-    ],
-    cmd = "protoc -I`dirname $(<)` $(<) --cpp_out=$(RULEDIR)",
 )
 
-cc_library(
-    name = "audioproc_debug_proto",
-    srcs = ["debug.pb.cc"],
-    hdrs = ["debug.pb.h"],
-    copts = COPTS,
-    deps = ["@pkg_config//protobuf"],
+cc_proto_library(
+    name = "debug_cc_proto",
+    deps = [":debug_proto"],
 )

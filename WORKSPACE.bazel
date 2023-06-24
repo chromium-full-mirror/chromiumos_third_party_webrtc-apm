@@ -42,6 +42,22 @@ http_archive(
     ],
 )
 
+COM_GOOGLE_PROTOBUF_VERSION = "21.12"
+
+http_archive(
+    name = "com_google_protobuf",
+    sha256 = "22fdaf641b31655d4b2297f9981fa5203b2866f8332d3c6333f6b0107bb320de",
+    strip_prefix = "protobuf-{}".format(COM_GOOGLE_PROTOBUF_VERSION),
+    urls = [
+        "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v{}.tar.gz".format(COM_GOOGLE_PROTOBUF_VERSION),
+        "https://github.com/protocolbuffers/protobuf/archive/v{}.tar.gz".format(COM_GOOGLE_PROTOBUF_VERSION),
+    ],
+)
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
+
 ADHD_URL = "https://chromium.googlesource.com/chromiumos/third_party/adhd"
 
 ADHD_COMMIT = "fcf1e883259cfde58c9e8be0267cce6ea270b6c0"
@@ -58,7 +74,6 @@ pkg_config_repository(
     name = "pkg_config",
     libs = [
         "libevent",
-        "protobuf",
         "gtest",
         "gtest_main",
     ],
