@@ -10,6 +10,7 @@ cc_library(
     srcs = ["webrtc_apm.cc"],
     hdrs = ["webrtc_apm.h"],
     copts = COPTS,
+    data = ["@the_quick_brown_fox_wav//file"],
     visibility = ["//visibility:public"],
     deps = [
         "//cras-config",
@@ -26,6 +27,7 @@ cc_test(
     deps = [
         ":webrtc_apm",
         "@pkg_config//gtest",
+        "@pkg_config//gmock",
         "@pkg_config//gtest_main",
     ],
 )

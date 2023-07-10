@@ -74,6 +74,7 @@ pkg_config_repository(
     name = "pkg_config",
     libs = [
         "libevent",
+        "gmock",
         "gtest",
         "gtest_main",
     ],
@@ -89,3 +90,7 @@ http_archive(
         "http://ndevilla.free.fr/iniparser/iniparser-3.1.tar.gz",
     ],
 )
+
+load(":deps.bzl", "file_deps")
+
+file_deps()
