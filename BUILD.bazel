@@ -26,8 +26,8 @@ cc_test(
     linkopts = ["-lm"],
     deps = [
         ":webrtc_apm",
-        "@pkg_config//gtest",
         "@pkg_config//gmock",
+        "@pkg_config//gtest",
         "@pkg_config//gtest_main",
     ],
 )
@@ -65,4 +65,11 @@ config_setting(
         ":chromiumos": "true",
     },
     visibility = ["//:__subpackages__"],
+)
+
+exports_files(
+    srcs = ["deps.bzl"],
+    visibility = [
+        "@adhd//:__subpackages__",  # To allow diff test to ensure it is in sync.
+    ],
 )
