@@ -136,20 +136,8 @@ static webrtc_apm webrtc_apm_create(unsigned int num_channels,
                                     WebRtcApmFeatures features) {
   int err;
   webrtc::AudioProcessing *apm;
-  webrtc::AudioProcessing::ChannelLayout channel_layout;
   webrtc::AudioProcessingBuilder apm_builder;
   webrtc::EchoCanceller3Config aec3_config;
-
-  switch (num_channels) {
-    case 1:
-      channel_layout = webrtc::AudioProcessing::kMono;
-      break;
-    case 2:
-      channel_layout = webrtc::AudioProcessing::kStereo;
-      break;
-    default:
-      return NULL;
-  }
 
   /* Set the AEC-tunings. */
   if (aec_ini) {
@@ -201,8 +189,13 @@ static webrtc_apm webrtc_apm_create(unsigned int num_channels,
     apm->ApplyConfig(config);
   }
 
-  err = apm->Initialize(frame_rate, frame_rate, frame_rate, channel_layout,
-                        webrtc::AudioProcessing::kMono, channel_layout);
+  const webrtc::ProcessingConfig processing_config = {{
+      webrtc::StreamConfig(frame_rate, num_channels),  // kInputStream
+      webrtc::StreamConfig(frame_rate, 1),             // kOutputStream
+      webrtc::StreamConfig(frame_rate, num_channels),  // kReverseInputStream
+      webrtc::StreamConfig(frame_rate, num_channels),  // kReverseOutputStream
+  }};
+  err = apm->Initialize(processing_config);
   if (err) {
     webrtc_apm_state->apm = nullptr;
     apm = nullptr;
@@ -308,7 +301,8 @@ void webrtc_apm_destroy(webrtc_apm ptr) {
   webrtc_apm_ptr->apm = nullptr;
   delete webrtc_apm_ptr;
 
-  std::map<std::string, std::unique_ptr<SampleInfo>> hist;
+  std::map<std::string, std::unique_ptr<SampleInfo>, rtc::AbslStringViewCmp>
+      hist;
 
   if (!metrics_lib_) return;
 

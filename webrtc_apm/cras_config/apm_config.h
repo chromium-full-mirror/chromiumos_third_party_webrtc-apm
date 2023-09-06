@@ -73,11 +73,6 @@ extern "C" {
 #define APM_TRANSIENT_SUPPRESSION_ENABLED "apm:transient_suppression_enabled"
 #define APM_TRANSIENT_SUPPRESSION_ENABLED_VALUE 0
 
-/* Keys for AudioProcessing::VoiceDetection */
-#define APM_VOICE_DETECTION_ENABLED "apm:voice_detection_enabled"
-#define APM_VOICE_DETECTION_ENABLED_VALUE 0
-
-
 /* Keys for AudioProcessing::GainController1 */
 /* 0: adaptive analog, 1: adaptive digital, 2: fixed digital */
 #define APM_GAIN_CONTROL_ENABLED "apm:gain_control_enabled"
@@ -151,36 +146,18 @@ extern "C" {
 #define APM_GAIN_CONTROLLER2_FIXED_DIGITAL_GAIN_DB_VALUE 0.f
 
 /* Keys for AudioProcessing::GainController2::AdaptiveDigital */
-#define ADAPTIVE_DIGITAL_ENABLED "apm:adaptive_digital_enabled"
-#define ADAPTIVE_DIGITAL_ENABLED_VALUE 0
-#define ADAPTIVE_DIGITAL_DRY_RUN         \
-	"apm:adaptive_digital_dry_run"
-#define ADAPTIVE_DIGITAL_DRY_RUN_VALUE 0
 #define ADAPTIVE_DIGITAL_HEADROOM_DB         \
 	"apm:adaptive_digital_headroom_db"
 #define ADAPTIVE_DIGITAL_HEADROOM_DB_VALUE 6.0f
 #define ADAPTIVE_DIGITAL_MAX_GAIN_DB         \
 	"apm:adaptive_digital_max_gain_db"
 #define ADAPTIVE_DIGITAL_MAX_GAIN_DB_VALUE 30.0f
-#define ADAPTIVE_DIGITAL_INITIAL_GAIN_DB         \
-	"apm:adaptive_digital_initial_gain_db"
-#define ADAPTIVE_DIGITAL_INITIAL_GAIN_DB_VALUE 8.0f
-#define ADAPTIVE_DIGITAL_VAD_RESET_PERIOD_MS         \
-	"apm:adaptive_digital_vad_reset_period_ms"
-#define ADAPTIVE_DIGITAL_VAD_RESET_PERIOD_MS_VALUE 1500
-#define ADAPTIVE_DIGITAL_ADJACENT_SPEECH_FRAMES_THRESHOLD         \
-	"apm:adaptive_digital_adjacent_speech_frames_threshold"
-#define ADAPTIVE_DIGITAL_ADJACENT_SPEECH_FRAMES_THRESHOLD_VALUE 12
 #define ADAPTIVE_DIGITAL_MAX_GAIN_CHANGE_DB_PER_SECOND         \
 	"apm:adaptive_digital_max_gain_change_db_per_second"
 #define ADAPTIVE_DIGITAL_MAX_GAIN_CHANGE_DB_PER_SECOND_VALUE 3.0f
 #define ADAPTIVE_DIGITAL_MAX_OUTPUT_NOISE_LEVEL_DBFS         \
 	"apm:adaptive_digital_max_output_noise_level_dbfs"
 #define ADAPTIVE_DIGITAL_MAX_OUTPUT_NOISE_LEVEL_DBFS_VALUE -50.0f
-
-/* Keys for AudioProcessing::ResidualEchoDetector */
-#define APM_RESIDUAL_ECHO_DETECTOR_ENABLED "apm:residual_echo_detector_enabled"
-#define APM_RESIDUAL_ECHO_DETECTOR_ENABLED_VALUE 1
 
 /* Sets the default agc config values when no ini file is present. */
 void agc_set_default_config(dictionary *ini,

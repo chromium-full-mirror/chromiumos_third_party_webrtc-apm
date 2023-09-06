@@ -84,10 +84,6 @@ void apm_config_set(dictionary *ini, webrtc::AudioProcessing::Config *config)
 	config->transient_suppression.enabled =
 		APM_GET_INT(ini, APM_TRANSIENT_SUPPRESSION_ENABLED);
 
-	/* Keys for AudioProcessing::VoiceDetection */
-	config->voice_detection.enabled =
-		APM_GET_INT(ini, APM_VOICE_DETECTION_ENABLED);
-
 	/* Keys for AudioProcessing::GainController1 */
 	config->gain_controller1.enabled =
 		APM_GET_INT(ini, APM_GAIN_CONTROL_ENABLED);
@@ -154,29 +150,14 @@ void apm_config_set(dictionary *ini, webrtc::AudioProcessing::Config *config)
 		APM_GET_FLOAT(ini, APM_GAIN_CONTROLLER2_FIXED_DIGITAL_GAIN_DB);
 
 	/* Keys for AudioProcessing::GainController2::AdaptiveDigital */
-	config->gain_controller2.adaptive_digital.enabled =
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_ENABLED);
-	config->gain_controller2.adaptive_digital.dry_run =
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_DRY_RUN);
 	config->gain_controller2.adaptive_digital.headroom_db =
 		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_HEADROOM_DB);
 	config->gain_controller2.adaptive_digital.max_gain_db =
 		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_MAX_GAIN_DB);
-	config->gain_controller2.adaptive_digital.initial_gain_db =
-		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_INITIAL_GAIN_DB);
-	config->gain_controller2.adaptive_digital.vad_reset_period_ms =
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_VAD_RESET_PERIOD_MS);
-	config->gain_controller2.adaptive_digital.adjacent_speech_frames_threshold =
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_ADJACENT_SPEECH_FRAMES_THRESHOLD);
 	config->gain_controller2.adaptive_digital.max_gain_change_db_per_second =
 		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_MAX_GAIN_CHANGE_DB_PER_SECOND);
 	config->gain_controller2.adaptive_digital.max_output_noise_level_dbfs =
 		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_MAX_OUTPUT_NOISE_LEVEL_DBFS);
-
-	/* Keys for AudioProcessing::ResidualEchoDetector */
-	config->residual_echo_detector.enabled =
-		APM_GET_INT(ini, APM_RESIDUAL_ECHO_DETECTOR_ENABLED);
-
 }
 
 void apm_config_dump(dictionary *ini)
@@ -238,10 +219,6 @@ void apm_config_dump(dictionary *ini)
 	/* Keys for AudioProcessing::TransientSuppression */
 	syslog(LOG_ERR, "transient_suppression_enabled %d",
 		APM_GET_INT(ini, APM_TRANSIENT_SUPPRESSION_ENABLED));
-
-	/* Keys for AudioProcessing::VoiceDetection */
-	syslog(LOG_ERR, "voice_detection_enabled %d",
-		APM_GET_INT(ini, APM_VOICE_DETECTION_ENABLED));
 
 	/* Keys for AudioProcessing::GainController1 */
 	syslog(LOG_ERR, "gain_control_enabled %u",
@@ -309,26 +286,12 @@ void apm_config_dump(dictionary *ini)
 		APM_GET_FLOAT(ini, APM_GAIN_CONTROLLER2_FIXED_DIGITAL_GAIN_DB));
 
 	/* Keys for AudioProcessing::GainController2::AdaptiveDigital */
-	syslog(LOG_ERR, "adaptive_digital_enabled %d",
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_ENABLED));
-	syslog(LOG_ERR, "adaptive_digital_dry_run %d",
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_DRY_RUN));
 	syslog(LOG_ERR, "adaptive_digital_headroom_db %f",
 		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_HEADROOM_DB));
 	syslog(LOG_ERR, "adaptive_digital_max_gain_db %f",
 		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_MAX_GAIN_DB));
-	syslog(LOG_ERR, "adaptive_digital_initial_gain_db %f",
-		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_INITIAL_GAIN_DB));
-	syslog(LOG_ERR, "adaptive_digital_vad_reset_period_ms %d",
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_VAD_RESET_PERIOD_MS));
-	syslog(LOG_ERR, "adaptive_digital_adjacent_speech_frames_threshold %d",
-		APM_GET_INT(ini, ADAPTIVE_DIGITAL_ADJACENT_SPEECH_FRAMES_THRESHOLD));
 	syslog(LOG_ERR, "adaptive_digital_max_gain_change_db_per_second %f",
 		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_MAX_GAIN_CHANGE_DB_PER_SECOND));
 	syslog(LOG_ERR, "adaptive_digital_max_output_noise_level_dbfs %f",
 		APM_GET_FLOAT(ini, ADAPTIVE_DIGITAL_MAX_OUTPUT_NOISE_LEVEL_DBFS));
-
-	/* Keys for AudioProcessing::ResidualEchoDetector */
-	syslog(LOG_ERR, "residual_echo_detector_enabled %u",
-		APM_GET_INT(ini, APM_RESIDUAL_ECHO_DETECTOR_ENABLED));
 }
