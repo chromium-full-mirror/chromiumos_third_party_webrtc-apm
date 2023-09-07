@@ -7,3 +7,6 @@ build --copt=-Wall --copt=-Werror
 
 # --config=local-clang: Use system clang to build.
 build:local-clang --action_env=CC=clang --action_env=CXX=clang++
+
+# Protobuf
+build --copt=-Wno-unused-function

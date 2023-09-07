@@ -16,7 +16,7 @@ cc_library(
     ],
     deps = [
         "//modules/audio_processing",
-        "//rtc_base",
+        "//api/audio:aec3_factory",
         "@iniparser",
     ],
 )

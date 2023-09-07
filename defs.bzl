@@ -21,13 +21,8 @@ COPTS = [
 
 AVX2_COPTS = ["-mavx2", "-mfma"]
 
-X64_ONLY = select({
-    "@platforms//cpu:x86_64": [],
-    "//conditions:default": ["@platforms//:incompatible"],
-})
-
-def select_x64(output):
+def require_condition(cond):
     return select({
-        "@platforms//cpu:x86_64": output,
-        "//conditions:default": [],
+        cond: [],
+        "//conditions:default": ["@platforms//:incompatible"],
     })
