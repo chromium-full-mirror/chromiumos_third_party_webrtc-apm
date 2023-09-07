@@ -2,52 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-load("//:defs.bzl", "AVX2_COPTS", "COPTS", "X64_ONLY", "select_x64")
+load("//:defs.bzl", "AVX2_COPTS", "COPTS", "require_condition")
 
-package(default_visibility = ["//:__subpackages__"])
-
-cc_library(
-    name = "headers",
-    hdrs = [
-        "audio_converter.h",
-        "channel_buffer.h",
-        "fir_filter.h",
-        "fir_filter_avx2.h",
-        "fir_filter_c.h",
-        "fir_filter_factory.h",
-        "fir_filter_neon.h",
-        "fir_filter_sse.h",
-        "include/audio_util.h",
-        "real_fourier.h",
-        "real_fourier_ooura.h",
-        "resampler/include/push_resampler.h",
-        "resampler/include/resampler.h",
-        "resampler/push_sinc_resampler.h",
-        "resampler/sinc_resampler.h",
-        "ring_buffer.h",
-        "signal_processing/complex_fft_tables.h",
-        "signal_processing/dot_product_with_scale.h",
-        "signal_processing/include/real_fft.h",
-        "signal_processing/include/signal_processing_library.h",
-        "signal_processing/include/spl_inl.h",
-        "signal_processing/resample_by_2_internal.h",
-        "smoothing_filter.h",
-        "third_party/ooura/fft_size_128/ooura_fft.h",
-        "third_party/ooura/fft_size_128/ooura_fft_tables_common.h",
-        "third_party/ooura/fft_size_128/ooura_fft_tables_neon_sse2.h",
-        "third_party/ooura/fft_size_256/fft4g.h",
-        "third_party/spl_sqrt_floor/spl_sqrt_floor.h",
-        "vad/include/vad.h",
-        "vad/include/webrtc_vad.h",
-        "vad/vad_core.h",
-        "vad/vad_filterbank.h",
-        "vad/vad_gmm.h",
-        "vad/vad_sp.h",
-        "wav_file.h",
-        "wav_header.h",
-        "window_generator.h",
-    ],
-    copts = COPTS,
+package(
+    default_visibility = ["//:__subpackages__"],
 )
 
 cc_library(
@@ -56,14 +14,81 @@ cc_library(
         "audio_converter.cc",
         "audio_util.cc",
         "channel_buffer.cc",
-        "fir_filter_c.cc",
-        "fir_filter_factory.cc",
         "real_fourier.cc",
         "real_fourier_ooura.cc",
         "resampler/push_resampler.cc",
         "resampler/push_sinc_resampler.cc",
         "resampler/resampler.cc",
         "resampler/sinc_resampler.cc",
+        "smoothing_filter.cc",
+        "wav_file.cc",
+        "wav_header.cc",
+        "window_generator.cc",
+        "//common_audio/vad:vad.cc",
+    ],
+    hdrs = [
+        "audio_converter.h",
+        "channel_buffer.h",
+        "include/audio_util.h",
+        "real_fourier.h",
+        "real_fourier_ooura.h",
+        "resampler/include/push_resampler.h",
+        "resampler/include/resampler.h",
+        "resampler/push_sinc_resampler.h",
+        "smoothing_filter.h",
+        "wav_file.h",
+        "wav_header.h",
+        "window_generator.h",
+        "//common_audio/vad/include:vad.h",
+    ],
+    copts = COPTS,
+    deps = [
+        ":common_audio_c",
+        ":sinc_resampler",
+        "//api:array_view",
+        "//common_audio/third_party/ooura:fft_size_256",
+        "//rtc_base:checks",
+        "//rtc_base:gtest_prod",
+        "//rtc_base:rtc_base_approved",
+        "//rtc_base:sanitizer",
+        "//rtc_base/memory:aligned_malloc",
+        "//rtc_base/system:arch",
+        "//rtc_base/system:file_wrapper",
+        "//system_wrappers",
+        "@com_google_absl//absl/types:optional",
+    ] + select({
+        "//:neon_build": [":common_audio_neon"],
+        "//conditions:default": [],
+    }) + select({
+        "@platforms//cpu:x86_64": [
+            ":common_audio_avx2",
+            ":common_audio_sse2",
+        ],
+        "//conditions:default": [],
+    }),
+)
+
+cc_library(
+    name = "common_audio_avx2",
+    srcs = [
+        "fir_filter_avx2.cc",
+        "resampler/sinc_resampler_avx2.cc",
+    ],
+    hdrs = ["fir_filter_avx2.h"],
+    copts = COPTS + AVX2_COPTS,
+    target_compatible_with = ["@platforms//cpu:x86_64"],
+    deps = [
+        ":fir_filter",
+        ":sinc_resampler",
+        "//rtc_base:checks",
+        "//rtc_base:rtc_base_approved",
+        "//rtc_base/memory:aligned_malloc",
+    ],
+)
+
+cc_library(
+    name = "common_audio_c",
+    srcs = [
         "ring_buffer.c",
         "signal_processing/auto_corr_to_refl_coef.c",
         "signal_processing/auto_correlation.c",
@@ -72,7 +97,6 @@ cc_library(
         "signal_processing/copy_set_operations.c",
         "signal_processing/cross_correlation.c",
         "signal_processing/division_operations.c",
-        "signal_processing/dot_product_with_scale.cc",
         "signal_processing/downsample_fast.c",
         "signal_processing/energy.c",
         "signal_processing/filter_ar.c",
@@ -98,56 +122,154 @@ cc_library(
         "signal_processing/splitting_filter.c",
         "signal_processing/sqrt_of_one_minus_x_squared.c",
         "signal_processing/vector_scaling_operations.c",
-        "smoothing_filter.cc",
-        "third_party/ooura/fft_size_128/ooura_fft.cc",
-        "third_party/ooura/fft_size_256/fft4g.cc",
-        "third_party/spl_sqrt_floor/spl_sqrt_floor.c",
-        "vad/vad.cc",
-        "vad/vad_core.c",
-        "vad/vad_filterbank.c",
-        "vad/vad_gmm.c",
-        "vad/vad_sp.c",
-        "vad/webrtc_vad.c",
-        "wav_file.cc",
-        "wav_header.cc",
-        "window_generator.cc",
-    ] + select({
-        "@platforms//cpu:x86_64": [
-            "fir_filter_sse.cc",
-            "resampler/sinc_resampler_sse.cc",
-            "third_party/ooura/fft_size_128/ooura_fft_sse2.cc",
-        ],
-        "//:neon_build": [
-            "fir_filter_neon.cc",
-            "resampler/sinc_resampler_neon.cc",
-            "signal_processing/cross_correlation_neon.c",
-            "signal_processing/downsample_fast_neon.c",
-            "signal_processing/min_max_operations_neon.c",
-            "third_party/ooura/fft_size_128/ooura_fft_neon.cc",
-        ],
-        "//conditions:default": [],
-    }),
+        "//common_audio/vad:vad_core.c",
+        "//common_audio/vad:vad_filterbank.c",
+        "//common_audio/vad:vad_gmm.c",
+        "//common_audio/vad:vad_sp.c",
+        "//common_audio/vad:webrtc_vad.c",
+    ],
+    hdrs = [
+        "ring_buffer.h",
+        "signal_processing/complex_fft_tables.h",
+        "signal_processing/include/real_fft.h",
+        "signal_processing/include/signal_processing_library.h",
+        "signal_processing/include/spl_inl.h",
+        "signal_processing/include/spl_inl_armv7.h",
+        "signal_processing/resample_by_2_internal.h",
+        "//common_audio/vad:vad_core.h",
+        "//common_audio/vad:vad_filterbank.h",
+        "//common_audio/vad:vad_gmm.h",
+        "//common_audio/vad:vad_sp.h",
+        "//common_audio/vad/include:webrtc_vad.h",
+    ],
     copts = COPTS,
     deps = [
-        ":headers",
-        "//api:headers",
-        "//rtc_base:headers",
+        ":common_audio_c_arm_asm",
+        ":common_audio_cc",
+        "//common_audio/third_party/ooura:fft_size_256",
+        "//common_audio/third_party/spl_sqrt_floor",
+        "//rtc_base:checks",
+        "//rtc_base:compile_assert_c",
+        "//rtc_base:rtc_base_approved",
+        "//rtc_base:sanitizer",
+        "//rtc_base/system:arch",
         "//system_wrappers",
-    ] + select_x64([
-        ":common_audio_avx2",
-    ]),
+    ],
 )
 
 cc_library(
-    name = "common_audio_avx2",
-    srcs = [
-        "fir_filter_avx2.cc",
-        "resampler/sinc_resampler_avx2.cc",
-    ],
-    copts = COPTS + AVX2_COPTS,
-    target_compatible_with = X64_ONLY,
+    name = "common_audio_c_arm_asm",
+    copts = COPTS,
+)
+
+cc_library(
+    name = "common_audio_cc",
+    srcs = ["signal_processing/dot_product_with_scale.cc"],
+    hdrs = ["signal_processing/dot_product_with_scale.h"],
+    copts = COPTS,
     deps = [
-        ":headers",
-        "//rtc_base",
+        "//rtc_base:rtc_base_approved",
+        "//system_wrappers",
+    ],
+)
+
+cc_library(
+    name = "common_audio_neon",
+    srcs = [
+        "fir_filter_neon.cc",
+        "resampler/sinc_resampler_neon.cc",
+    ],
+    hdrs = ["fir_filter_neon.h"],
+    copts = COPTS,
+    target_compatible_with = require_condition("//:neon_build"),
+    deps = [
+        ":common_audio_neon_c",
+        ":fir_filter",
+        ":sinc_resampler",
+        "//rtc_base:checks",
+        "//rtc_base:rtc_base_approved",
+        "//rtc_base/memory:aligned_malloc",
+    ],
+)
+
+cc_library(
+    name = "common_audio_neon_c",
+    srcs = [
+        "signal_processing/cross_correlation_neon.c",
+        "signal_processing/downsample_fast_neon.c",
+        "signal_processing/min_max_operations_neon.c",
+    ],
+    copts = COPTS,
+    target_compatible_with = require_condition("//:neon_build"),
+    deps = [
+        ":common_audio_c",
+        "//rtc_base:checks",
+        "//rtc_base:rtc_base_approved",
+        "//rtc_base/system:arch",
+    ],
+)
+
+cc_library(
+    name = "common_audio_sse2",
+    srcs = [
+        "fir_filter_sse.cc",
+        "resampler/sinc_resampler_sse.cc",
+    ],
+    hdrs = ["fir_filter_sse.h"],
+    copts = COPTS,
+    deps = [
+        ":fir_filter",
+        ":sinc_resampler",
+        "//rtc_base:checks",
+        "//rtc_base:rtc_base_approved",
+        "//rtc_base/memory:aligned_malloc",
+    ],
+)
+
+cc_library(
+    name = "fir_filter",
+    hdrs = ["fir_filter.h"],
+    copts = COPTS,
+)
+
+cc_library(
+    name = "fir_filter_factory",
+    srcs = [
+        "fir_filter_c.cc",
+        "fir_filter_factory.cc",
+    ],
+    hdrs = [
+        "fir_filter_c.h",
+        "fir_filter_factory.h",
+    ],
+    copts = COPTS,
+    deps = [
+        ":fir_filter",
+        "//rtc_base:checks",
+        "//rtc_base:rtc_base_approved",
+        "//rtc_base/system:arch",
+        "//system_wrappers",
+    ] + select({
+        "//:neon_build": [":common_audio_neon"],
+        "//conditions:default": [],
+    }) + select({
+        "@platforms//cpu:x86_64": [
+            ":common_audio_avx2",
+            ":common_audio_sse2",
+        ],
+        "//conditions:default": [],
+    }),
+)
+
+cc_library(
+    name = "sinc_resampler",
+    hdrs = ["resampler/sinc_resampler.h"],
+    copts = COPTS,
+    deps = [
+        "//rtc_base:gtest_prod",
+        "//rtc_base:rtc_base_approved",
+        "//rtc_base/memory:aligned_malloc",
+        "//rtc_base/system:arch",
+        "//system_wrappers",
     ],
 )

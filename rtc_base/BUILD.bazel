@@ -4,130 +4,369 @@
 
 load("//:defs.bzl", "COPTS")
 
-package(default_visibility = ["//:__subpackages__"])
+package(
+    default_visibility = ["//:__subpackages__"],
+)
 
 cc_library(
-    name = "headers",
+    name = "atomicops",
+    hdrs = ["atomic_ops.h"],
+    copts = COPTS,
+)
+
+cc_library(
+    name = "checks",
+    srcs = ["checks.cc"],
+    hdrs = ["checks.h"],
+    copts = COPTS,
+    deps = [
+        ":safe_compare",
+        "//rtc_base/system:inline",
+        "//rtc_base/system:rtc_export",
+        "@com_google_absl//absl/meta:type_traits",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "compile_assert_c",
+    hdrs = ["compile_assert_c.h"],
+    copts = COPTS,
+)
+
+cc_library(
+    name = "criticalsection",
+    srcs = ["deprecated/recursive_critical_section.cc"],
+    hdrs = ["deprecated/recursive_critical_section.h"],
+    copts = COPTS,
+    deps = [
+        ":atomicops",
+        ":checks",
+        ":macromagic",
+        ":platform_thread_types",
+        "//rtc_base/synchronization:yield",
+        "//rtc_base/system:unused",
+    ],
+)
+
+cc_library(
+    name = "gtest_prod",
+    hdrs = ["gtest_prod_util.h"],
+    copts = COPTS,
+)
+
+cc_library(
+    name = "ignore_wundef",
+    hdrs = ["ignore_wundef.h"],
+    copts = COPTS,
+)
+
+cc_library(
+    name = "logging",
+    srcs = ["logging.cc"],
+    hdrs = ["logging.h"],
+    copts = COPTS,
+    deps = [
+        ":checks",
+        ":macromagic",
+        ":platform_thread_types",
+        ":stringutils",
+        ":timeutils",
+        "//rtc_base/synchronization:mutex",
+        "//rtc_base/system:inline",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/meta:type_traits",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "macromagic",
     hdrs = [
         "arraysize.h",
-        "atomic_ops.h",
+        "constructor_magic.h",
+        "format_macros.h",
+        "thread_annotations.h",
+    ],
+    copts = COPTS,
+    deps = ["//rtc_base/system:arch"],
+)
+
+cc_library(
+    name = "platform_thread",
+    srcs = ["platform_thread.cc"],
+    hdrs = ["platform_thread.h"],
+    copts = COPTS,
+    deps = [
+        ":atomicops",
+        ":checks",
+        ":macromagic",
+        ":platform_thread_types",
+        ":rtc_event",
+        ":timeutils",
+        "//api:sequence_checker",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "platform_thread_types",
+    srcs = ["platform_thread_types.cc"],
+    hdrs = ["platform_thread_types.h"],
+    copts = COPTS,
+    deps = [":macromagic"],
+)
+
+cc_library(
+    name = "protobuf_utils",
+    hdrs = ["protobuf_utils.h"],
+    copts = COPTS,
+)
+
+cc_library(
+    name = "refcount",
+    hdrs = [
+        "ref_count.h",
+        "ref_counted_object.h",
+        "ref_counter.h",
+    ],
+    copts = COPTS,
+    deps = [
+        ":macromagic",
+        "//api:scoped_refptr",
+    ],
+)
+
+cc_library(
+    name = "rtc_base_approved",
+    srcs = [
+        "bit_buffer.cc",
+        "buffer_queue.cc",
+        "byte_buffer.cc",
+        "copy_on_write_buffer.cc",
+        "event_tracer.cc",
+        "location.cc",
+        "race_checker.cc",
+        "random.cc",
+        "rate_statistics.cc",
+        "rate_tracker.cc",
+        "timestamp_aligner.cc",
+        "zero_memory.cc",
+        "//rtc_base/numerics:histogram_percentile_counter.cc",
+        "//rtc_base/numerics:sample_counter.cc",
+    ],
+    hdrs = [
         "bit_buffer.h",
         "buffer.h",
         "buffer_queue.h",
         "byte_buffer.h",
         "byte_order.h",
-        "checks.h",
-        "compile_assert_c.h",
-        "constructor_magic.h",
         "copy_on_write_buffer.h",
-        "deprecated/recursive_critical_section.h",
-        "event.h",
         "event_tracer.h",
-        "experiments/field_trial_parser.h",
-        "gtest_prod_util.h",
-        "ignore_wundef.h",
         "location.h",
-        "logging.h",
-        "memory/aligned_malloc.h",
-        "numerics/histogram_percentile_counter.h",
-        "numerics/moving_median_filter.h",
-        "numerics/percentile_filter.h",
-        "numerics/safe_compare.h",
-        "numerics/safe_conversions.h",
-        "numerics/safe_conversions_impl.h",
-        "numerics/safe_minmax.h",
-        "platform_thread.h",
-        "platform_thread_types.h",
+        "one_time_event.h",
         "race_checker.h",
         "random.h",
         "rate_statistics.h",
         "rate_tracker.h",
-        "ref_count.h",
-        "ref_counted_object.h",
-        "ref_counter.h",
-        "sanitizer.h",
-        "string_encode.h",
-        "string_to_number.h",
-        "string_utils.h",
-        "strings/string_builder.h",
+        "strong_alias.h",
         "swap_queue.h",
-        "synchronization/mutex.h",
-        "synchronization/mutex_pthread.h",
-        "synchronization/sequence_checker_internal.h",
-        "synchronization/yield.h",
-        "synchronization/yield_policy.h",
-        "system/arch.h",
-        "system/file_wrapper.h",
-        "system/ignore_warnings.h",
-        "system/inline.h",
-        "system/no_unique_address.h",
-        "system/rtc_export.h",
-        "system/unused.h",
-        "system/warn_current_thread_is_deadlocked.h",
-        "system_time.h",
-        "task_queue.h",
-        "task_queue_libevent.h",
-        "task_utils/pending_task_safety_flag.h",
-        "task_utils/to_queued_task.h",
-        "third_party/base64/base64.h",
-        "thread_annotations.h",
-        "time_utils.h",
         "timestamp_aligner.h",
         "trace_event.h",
-        "type_traits.h",
-        "units/unit_base.h",
         "zero_memory.h",
-    ],
-    copts = COPTS,
-    deps = ["@com_google_absl//absl/strings"],
-)
-
-cc_library(
-    name = "rtc_base",
-    srcs = [
-        "bit_buffer.cc",
-        "buffer_queue.cc",
-        "byte_buffer.cc",
-        "checks.cc",
-        "copy_on_write_buffer.cc",
-        "deprecated/recursive_critical_section.cc",
-        "event.cc",
-        "event_tracer.cc",
-        "experiments/field_trial_parser.cc",
-        "location.cc",
-        "logging.cc",
-        "memory/aligned_malloc.cc",
-        "numerics/histogram_percentile_counter.cc",
-        "platform_thread.cc",
-        "platform_thread_types.cc",
-        "race_checker.cc",
-        "random.cc",
-        "rate_statistics.cc",
-        "rate_tracker.cc",
-        "string_encode.cc",
-        "string_to_number.cc",
-        "string_utils.cc",
-        "strings/string_builder.cc",
-        "synchronization/sequence_checker_internal.cc",
-        "synchronization/yield_policy.cc",
-        "system/file_wrapper.cc",
-        "system_time.cc",
-        "task_queue.cc",
-        "task_queue_libevent.cc",
-        "third_party/base64/base64.cc",
-        "time_utils.cc",
-        "timestamp_aligner.cc",
-        "zero_memory.cc",
+        "//rtc_base/numerics:histogram_percentile_counter.h",
+        "//rtc_base/numerics:mod_ops.h",
+        "//rtc_base/numerics:moving_max_counter.h",
+        "//rtc_base/numerics:sample_counter.h",
     ],
     copts = COPTS,
     deps = [
-        ":headers",
-        "//api:headers",
-        "//api:task_queue",
-        "@com_google_absl//absl/base",
-        "@com_google_absl//absl/container:inlined_vector",
-        "@com_google_absl//absl/meta:type_traits",
+        ":atomicops",
+        ":checks",
+        ":logging",
+        ":macromagic",
+        ":platform_thread",
+        ":platform_thread_types",
+        ":refcount",
+        ":rtc_event",
+        ":rtc_task_queue",
+        ":safe_compare",
+        ":safe_conversions",
+        ":stringutils",
+        ":timeutils",
+        ":type_traits",
+        "//api:array_view",
+        "//api:scoped_refptr",
+        "//api:sequence_checker",
+        "//rtc_base/synchronization:mutex",
+        "//rtc_base/system:arch",
+        "//rtc_base/system:no_unique_address",
+        "//rtc_base/system:rtc_export",
+        "//rtc_base/third_party/base64",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/numeric:bits",
         "@com_google_absl//absl/types:optional",
     ],
+)
+
+cc_library(
+    name = "rtc_event",
+    srcs = ["event.cc"],
+    hdrs = ["event.h"],
+    copts = COPTS,
+    deps = [
+        ":checks",
+        "//rtc_base/synchronization:yield_policy",
+        "//rtc_base/system:warn_current_thread_is_deadlocked",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "rtc_numerics",
+    srcs = [
+        "//rtc_base/numerics:event_based_exponential_moving_average.cc",
+        "//rtc_base/numerics:exp_filter.cc",
+        "//rtc_base/numerics:moving_average.cc",
+    ],
+    hdrs = [
+        "//rtc_base/numerics:event_based_exponential_moving_average.h",
+        "//rtc_base/numerics:exp_filter.h",
+        "//rtc_base/numerics:math_utils.h",
+        "//rtc_base/numerics:moving_average.h",
+        "//rtc_base/numerics:moving_median_filter.h",
+        "//rtc_base/numerics:percentile_filter.h",
+        "//rtc_base/numerics:running_statistics.h",
+        "//rtc_base/numerics:sequence_number_util.h",
+    ],
+    copts = COPTS,
+    deps = [
+        ":checks",
+        ":rtc_base_approved",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "rtc_task_queue",
+    srcs = ["task_queue.cc"],
+    hdrs = ["task_queue.h"],
+    copts = COPTS,
+    deps = [
+        ":macromagic",
+        "//api/task_queue",
+        "//rtc_base/system:rtc_export",
+        "//rtc_base/task_utils:to_queued_task",
+        "@com_google_absl//absl/memory",
+    ],
+)
+
+cc_library(
+    name = "rtc_task_queue_libevent",
+    srcs = ["task_queue_libevent.cc"],
+    hdrs = ["task_queue_libevent.h"],
+    copts = COPTS,
+    deps = [
+        ":checks",
+        ":logging",
+        ":macromagic",
+        ":platform_thread",
+        ":platform_thread_types",
+        ":safe_conversions",
+        ":timeutils",
+        "//api/task_queue",
+        "//rtc_base/synchronization:mutex",
+        "@com_google_absl//absl/container:inlined_vector",
+        "@com_google_absl//absl/strings",
+        "@pkg_config//libevent",
+    ],
+)
+
+cc_library(
+    name = "safe_compare",
+    hdrs = ["//rtc_base/numerics:safe_compare.h"],
+    copts = COPTS,
+    deps = [":type_traits"],
+)
+
+cc_library(
+    name = "safe_conversions",
+    hdrs = [
+        "//rtc_base/numerics:safe_conversions.h",
+        "//rtc_base/numerics:safe_conversions_impl.h",
+    ],
+    copts = COPTS,
+    deps = [":checks"],
+)
+
+cc_library(
+    name = "safe_minmax",
+    hdrs = ["//rtc_base/numerics:safe_minmax.h"],
+    copts = COPTS,
+    deps = [
+        ":checks",
+        ":safe_compare",
+        ":type_traits",
+    ],
+)
+
+cc_library(
+    name = "sanitizer",
+    hdrs = ["sanitizer.h"],
+    copts = COPTS,
+    deps = ["@com_google_absl//absl/meta:type_traits"],
+)
+
+cc_library(
+    name = "stringutils",
+    srcs = [
+        "string_encode.cc",
+        "string_to_number.cc",
+        "string_utils.cc",
+        "//rtc_base/strings:string_builder.cc",
+        "//rtc_base/strings:string_format.cc",
+    ],
+    hdrs = [
+        "string_encode.h",
+        "string_to_number.h",
+        "string_utils.h",
+        "//rtc_base/strings:string_builder.h",
+        "//rtc_base/strings:string_format.h",
+    ],
+    copts = COPTS,
+    deps = [
+        ":checks",
+        ":macromagic",
+        ":safe_minmax",
+        "//api:array_view",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "timeutils",
+    srcs = [
+        "system_time.cc",
+        "time_utils.cc",
+    ],
+    hdrs = [
+        "system_time.h",
+        "time_utils.h",
+    ],
+    copts = COPTS,
+    deps = [
+        ":checks",
+        ":safe_conversions",
+        ":stringutils",
+        "//rtc_base/system:rtc_export",
+    ],
+)
+
+cc_library(
+    name = "type_traits",
+    hdrs = ["type_traits.h"],
+    copts = COPTS,
 )

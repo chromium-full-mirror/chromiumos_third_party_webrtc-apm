@@ -4,27 +4,44 @@
 
 load("//:defs.bzl", "COPTS")
 
-package(default_visibility = ["//:__subpackages__"])
+package(
+    default_visibility = ["//:__subpackages__"],
+)
 
 cc_library(
-    name = "utility",
+    name = "cascaded_biquad_filter",
+    srcs = ["cascaded_biquad_filter.cc"],
+    hdrs = ["cascaded_biquad_filter.h"],
+    copts = COPTS,
+    deps = [
+        "//api:array_view",
+        "//rtc_base:checks",
+    ],
+)
+
+cc_library(
+    name = "legacy_delay_estimator",
     srcs = [
-        "cascaded_biquad_filter.cc",
         "delay_estimator.cc",
         "delay_estimator_wrapper.cc",
-        "pffft_wrapper.cc",
     ],
     hdrs = [
-        "cascaded_biquad_filter.h",
         "delay_estimator.h",
         "delay_estimator_internal.h",
         "delay_estimator_wrapper.h",
-        "pffft_wrapper.h",
     ],
     copts = COPTS,
+    deps = ["//rtc_base:checks"],
+)
+
+cc_library(
+    name = "pffft_wrapper",
+    srcs = ["pffft_wrapper.cc"],
+    hdrs = ["pffft_wrapper.h"],
+    copts = COPTS,
     deps = [
-        "//api:headers",
-        "//rtc_base:headers",
+        "//api:array_view",
+        "//rtc_base:checks",
         "//third_party/pffft",
     ],
 )

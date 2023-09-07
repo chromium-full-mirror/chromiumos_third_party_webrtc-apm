@@ -1,0 +1,31 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+package(
+    default_visibility = ["//:__subpackages__"],
+)
+
+exports_files([
+    "event_based_exponential_moving_average.cc",
+    "event_based_exponential_moving_average.h",
+    "exp_filter.cc",
+    "exp_filter.h",
+    "histogram_percentile_counter.cc",
+    "histogram_percentile_counter.h",
+    "math_utils.h",
+    "mod_ops.h",
+    "moving_average.cc",
+    "moving_average.h",
+    "moving_max_counter.h",
+    "moving_median_filter.h",
+    "percentile_filter.h",
+    "running_statistics.h",
+    "safe_compare.h",
+    "safe_conversions.h",
+    "safe_conversions_impl.h",
+    "safe_minmax.h",
+    "sample_counter.cc",
+    "sample_counter.h",
+    "sequence_number_util.h",
+])

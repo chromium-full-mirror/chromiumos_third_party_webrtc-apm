@@ -4,61 +4,83 @@
 
 load("//:defs.bzl", "COPTS")
 
-package(default_visibility = ["//:__subpackages__"])
+package(
+    default_visibility = ["//:__subpackages__"],
+)
 
 cc_library(
-    name = "headers",
+    name = "array_view",
+    hdrs = ["array_view.h"],
+    copts = COPTS,
+    deps = [
+        "//rtc_base:checks",
+        "//rtc_base:type_traits",
+    ],
+)
+
+cc_library(
+    name = "function_view",
+    hdrs = ["function_view.h"],
+    copts = COPTS,
+    deps = ["//rtc_base:checks"],
+)
+
+cc_library(
+    name = "refcountedbase",
+    hdrs = ["ref_counted_base.h"],
+    copts = COPTS,
+    deps = [
+        "//rtc_base:macromagic",
+        "//rtc_base:refcount",
+    ],
+)
+
+cc_library(
+    name = "rtp_headers",
+    srcs = ["rtp_headers.cc"],
+    hdrs = ["rtp_headers.h"],
+    copts = COPTS,
+    deps = [
+        ":array_view",
+        "//api/units:timestamp",
+        "//api/video:video_rtp_headers",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "rtp_packet_info",
+    srcs = ["rtp_packet_info.cc"],
     hdrs = [
-        "array_view.h",
-        "audio/audio_frame.h",
-        "audio/channel_layout.h",
-        "audio/echo_canceller3_config.h",
-        "audio/echo_canceller3_factory.h",
-        "audio/echo_control.h",
-        "function_view.h",
-        "ref_counted_base.h",
-        "rtp_headers.h",
         "rtp_packet_info.h",
         "rtp_packet_infos.h",
-        "scoped_refptr.h",
-        "sequence_checker.h",
-        "task_queue/default_task_queue_factory.h",
-        "task_queue/queued_task.h",
-        "task_queue/task_queue_base.h",
-        "task_queue/task_queue_factory.h",
-        "units/time_delta.h",
-        "units/timestamp.h",
-        "video/color_space.h",
-        "video/hdr_metadata.h",
-        "video/video_content_type.h",
-        "video/video_rotation.h",
-        "video/video_timing.h",
-    ],
-    copts = COPTS,
-)
-
-filegroup(
-    name = "audio_sources",
-    srcs = [
-        "audio/audio_frame.cc",
-        "audio/channel_layout.cc",
-        "audio/echo_canceller3_config.cc",
-        "audio/echo_canceller3_factory.cc",
-    ],
-)
-
-cc_library(
-    name = "task_queue",
-    srcs = [
-        "task_queue/default_task_queue_factory_libevent.cc",
-        "task_queue/task_queue_base.cc",
     ],
     copts = COPTS,
     deps = [
-        ":headers",
-        "//rtc_base:headers",
-        "@com_google_absl//absl/meta:type_traits",
-        "@com_google_absl//absl/strings",
-        "@pkg_config//libevent",
+        ":array_view",
+        ":refcountedbase",
+        ":rtp_headers",
+        ":scoped_refptr",
+        "//api/units:timestamp",
+        "//rtc_base:rtc_base_approved",
+        "//rtc_base/system:rtc_export",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "scoped_refptr",
+    hdrs = ["scoped_refptr.h"],
+    copts = COPTS,
+)
+
+cc_library(
+    name = "sequence_checker",
+    hdrs = ["sequence_checker.h"],
+    copts = COPTS,
+    deps = [
+        "//rtc_base:checks",
+        "//rtc_base:macromagic",
+        "//rtc_base/synchronization:sequence_checker_internal",
     ],
 )

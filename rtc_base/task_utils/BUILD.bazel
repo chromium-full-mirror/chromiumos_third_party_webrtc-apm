@@ -1,0 +1,33 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+load("//:defs.bzl", "COPTS")
+
+package(
+    default_visibility = ["//:__subpackages__"],
+)
+
+cc_library(
+    name = "pending_task_safety_flag",
+    srcs = ["pending_task_safety_flag.cc"],
+    hdrs = ["pending_task_safety_flag.h"],
+    copts = COPTS,
+    deps = [
+        "//api:refcountedbase",
+        "//api:scoped_refptr",
+        "//api:sequence_checker",
+        "//rtc_base:checks",
+        "//rtc_base/system:no_unique_address",
+    ],
+)
+
+cc_library(
+    name = "to_queued_task",
+    hdrs = ["to_queued_task.h"],
+    copts = COPTS,
+    deps = [
+        ":pending_task_safety_flag",
+        "//api/task_queue",
+    ],
+)

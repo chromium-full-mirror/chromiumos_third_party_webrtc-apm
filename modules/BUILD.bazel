@@ -4,12 +4,13 @@
 
 load("//:defs.bzl", "COPTS")
 
-package(default_visibility = ["//:__subpackages__"])
+package(
+    default_visibility = ["//:__subpackages__"],
+)
 
 cc_library(
-    name = "headers",
-    hdrs = [
-        "include/module_common_types_public.h",
-    ],
+    name = "module_api_public",
+    hdrs = ["//modules/include:module_common_types_public.h"],
     copts = COPTS,
+    deps = ["@com_google_absl//absl/types:optional"],
 )

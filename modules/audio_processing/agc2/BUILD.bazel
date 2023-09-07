@@ -4,63 +4,146 @@
 
 load("//:defs.bzl", "COPTS")
 
-package(default_visibility = ["//:__subpackages__"])
-
-cc_library(
-    name = "headers",
-    hdrs = [
-        "adaptive_digital_gain_applier.h",
-        "adaptive_digital_gain_controller.h",
-        "adaptive_mode_level_estimator.h",
-        "agc2_common.h",
-        "agc2_testing_common.h",
-        "biquad_filter.h",
-        "compute_interpolated_gain_curve.h",
-        "cpu_features.h",
-        "fixed_digital_level_estimator.h",
-        "gain_applier.h",
-        "interpolated_gain_curve.h",
-        "limiter.h",
-        "limiter_db_gain_curve.h",
-        "noise_level_estimator.h",
-        "saturation_protector.h",
-        "saturation_protector_buffer.h",
-        "vad_wrapper.h",
-        "vector_float_frame.h",
-    ],
-    copts = COPTS,
+package(
+    default_visibility = ["//:__subpackages__"],
 )
 
 cc_library(
-    name = "agc2",
+    name = "adaptive_digital",
     srcs = [
         "adaptive_digital_gain_applier.cc",
         "adaptive_digital_gain_controller.cc",
         "adaptive_mode_level_estimator.cc",
-        "agc2_testing_common.cc",
-        "biquad_filter.cc",
-        "compute_interpolated_gain_curve.cc",
-        "cpu_features.cc",
-        "fixed_digital_level_estimator.cc",
-        "gain_applier.cc",
-        "interpolated_gain_curve.cc",
-        "limiter.cc",
-        "limiter_db_gain_curve.cc",
-        "noise_level_estimator.cc",
         "saturation_protector.cc",
         "saturation_protector_buffer.cc",
-        "vad_wrapper.cc",
-        "vector_float_frame.cc",
+    ],
+    hdrs = [
+        "adaptive_digital_gain_applier.h",
+        "adaptive_digital_gain_controller.h",
+        "adaptive_mode_level_estimator.h",
+        "saturation_protector.h",
+        "saturation_protector_buffer.h",
     ],
     copts = COPTS,
     deps = [
-        ":headers",
-        "//api:headers",
+        ":common",
+        ":cpu_features",
+        ":gain_applier",
+        ":noise_level_estimator",
+        ":vad_wrapper",
+        "//api:array_view",
         "//common_audio",
-        "//modules/audio_processing:headers",
-        "//modules/audio_processing/agc2/rnn_vad",
-        "//rtc_base:headers",
-        "//system_wrappers",
+        "//modules/audio_processing:api",
+        "//modules/audio_processing:apm_logging",
+        "//modules/audio_processing:audio_frame_view",
+        "//rtc_base:checks",
+        "//rtc_base:logging",
+        "//rtc_base:rtc_base_approved",
+        "//rtc_base:safe_compare",
+        "//rtc_base:safe_minmax",
+        "//system_wrappers:metrics",
         "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "biquad_filter",
+    srcs = ["biquad_filter.cc"],
+    hdrs = ["biquad_filter.h"],
+    copts = COPTS,
+    deps = [
+        "//api:array_view",
+        "//rtc_base:rtc_base_approved",
+    ],
+)
+
+cc_library(
+    name = "common",
+    hdrs = ["agc2_common.h"],
+    copts = COPTS,
+)
+
+cc_library(
+    name = "cpu_features",
+    srcs = ["cpu_features.cc"],
+    hdrs = ["cpu_features.h"],
+    copts = COPTS,
+    deps = [
+        "//rtc_base:stringutils",
+        "//rtc_base/system:arch",
+        "//system_wrappers",
+    ],
+)
+
+cc_library(
+    name = "fixed_digital",
+    srcs = [
+        "fixed_digital_level_estimator.cc",
+        "interpolated_gain_curve.cc",
+        "limiter.cc",
+    ],
+    hdrs = [
+        "fixed_digital_level_estimator.h",
+        "interpolated_gain_curve.h",
+        "limiter.h",
+    ],
+    copts = COPTS,
+    deps = [
+        ":common",
+        "//api:array_view",
+        "//common_audio",
+        "//modules/audio_processing:apm_logging",
+        "//modules/audio_processing:audio_frame_view",
+        "//rtc_base:checks",
+        "//rtc_base:gtest_prod",
+        "//rtc_base:rtc_base_approved",
+        "//rtc_base:safe_conversions",
+        "//rtc_base:safe_minmax",
+        "//system_wrappers:metrics",
+    ],
+)
+
+cc_library(
+    name = "gain_applier",
+    srcs = ["gain_applier.cc"],
+    hdrs = ["gain_applier.h"],
+    copts = COPTS,
+    deps = [
+        ":common",
+        "//api:array_view",
+        "//modules/audio_processing:audio_frame_view",
+        "//rtc_base:safe_minmax",
+    ],
+)
+
+cc_library(
+    name = "noise_level_estimator",
+    srcs = ["noise_level_estimator.cc"],
+    hdrs = ["noise_level_estimator.h"],
+    copts = COPTS,
+    deps = [
+        ":biquad_filter",
+        "//api:array_view",
+        "//modules/audio_processing:apm_logging",
+        "//modules/audio_processing:audio_frame_view",
+        "//rtc_base:checks",
+        "//system_wrappers",
+    ],
+)
+
+cc_library(
+    name = "vad_wrapper",
+    srcs = ["vad_wrapper.cc"],
+    hdrs = ["vad_wrapper.h"],
+    copts = COPTS,
+    deps = [
+        ":common",
+        ":cpu_features",
+        "//api:array_view",
+        "//common_audio",
+        "//modules/audio_processing:audio_frame_view",
+        "//modules/audio_processing/agc2/rnn_vad",
+        "//modules/audio_processing/agc2/rnn_vad:rnn_vad_common",
+        "//rtc_base:checks",
     ],
 )
