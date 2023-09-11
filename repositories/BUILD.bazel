@@ -8,5 +8,5 @@ alias(
         "//:chromiumos_build": "@pkg_config//libmetrics",
         "//conditions:default": "//repositories/metrics_library_stub",
     }),
-    visibility = ["//:__pkg__"],
+    visibility = ["//webrtc_apm:__pkg__"],
 )

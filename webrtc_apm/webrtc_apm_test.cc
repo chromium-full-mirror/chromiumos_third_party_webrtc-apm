@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webrtc_apm.h"
+#include "webrtc_apm/webrtc_apm.h"
 
 #include <numeric>
 #include <vector>
@@ -10,10 +10,6 @@
 #include "common_audio/wav_file.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-
-extern "C" {
-#include "iniparser.h"
-}
 
 namespace {
 

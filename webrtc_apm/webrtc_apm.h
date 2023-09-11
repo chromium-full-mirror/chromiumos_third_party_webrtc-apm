@@ -7,14 +7,15 @@
 #ifndef WEBRTC_APM_H_
 #define WEBRTC_APM_H_
 
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <iniparser.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
 
 #define WEBRTC_APM_API __attribute__((visibility("default")))
 
@@ -43,13 +44,9 @@ WEBRTC_APM_API void webrtc_apm_init_metrics(const char *prefix);
  *                     regardless of settings in apm.ini.
  */
 WEBRTC_APM_API webrtc_apm webrtc_apm_create_with_enforced_effects(
-    unsigned int num_channels,
-    unsigned int frame_rate,
-    dictionary *aec_ini,
-    dictionary *apm_ini,
-    unsigned int enforce_aec_on,
-    unsigned int enforce_ns_on,
-    unsigned int enforce_agc_on);
+    unsigned int num_channels, unsigned int frame_rate, dictionary *aec_ini,
+    dictionary *apm_ini, unsigned int enforce_aec_on,
+    unsigned int enforce_ns_on, unsigned int enforce_agc_on);
 
 /* Collection of flags indicating which APM features are enabled. */
 typedef struct {
@@ -81,13 +78,9 @@ typedef struct {
  *                     values obtained
  */
 WEBRTC_APM_API webrtc_apm webrtc_apm_create_for_testing(
-    unsigned int num_channels,
-    unsigned int frame_rate,
-    dictionary *aec_ini,
-    dictionary *apm_ini,
-    unsigned int enforce_aec_on,
-    unsigned int enforce_ns_on,
-    unsigned int enforce_agc_on,
+    unsigned int num_channels, unsigned int frame_rate, dictionary *aec_ini,
+    dictionary *apm_ini, unsigned int enforce_aec_on,
+    unsigned int enforce_ns_on, unsigned int enforce_agc_on,
     WebRtcApmFeatures features);
 
 /* Enables/disables effects in a webrtc_apm.
@@ -104,10 +97,8 @@ WEBRTC_APM_API webrtc_apm webrtc_apm_create_for_testing(
  *    enable_ns  - When set to 1, enables the NS.
  *    enable_agc - When set to 1, enables the AGC.
  */
-WEBRTC_APM_API void webrtc_apm_enable_effects(webrtc_apm ptr,
-                                              bool enable_aec,
-                                              bool enable_ns,
-                                              bool enable_agc);
+WEBRTC_APM_API void webrtc_apm_enable_effects(webrtc_apm ptr, bool enable_aec,
+                                              bool enable_ns, bool enable_agc);
 
 /* Enables/disables voice activity detection in a wenrtc_apm.
  * This should be called in the same thread that calls webrtc_apm_enable_effects
@@ -135,10 +126,8 @@ WEBRTC_APM_API int webrtc_apm_process_reverse_stream_f(webrtc_apm ptr,
 
 /* Processes deinterleaved float data in forward stream. Expecting data
  * size be 10 ms equivalent of frames. */
-WEBRTC_APM_API int webrtc_apm_process_stream_f(webrtc_apm ptr,
-                                               int num_channels,
-                                               int rate,
-                                               float *const *data);
+WEBRTC_APM_API int webrtc_apm_process_stream_f(webrtc_apm ptr, int num_channels,
+                                               int rate, float *const *data);
 
 /* Gets the detected voice activity if vad has been enabled.
  */
@@ -161,10 +150,8 @@ WEBRTC_APM_API int webrtc_apm_set_stream_delay(webrtc_apm ptr, int delay_ms);
  *    start - True to start dumping, false to stop.
  *    handle - Pointer of the file storing aec dump.
  */
-WEBRTC_APM_API int webrtc_apm_aec_dump(webrtc_apm ptr,
-                                       void **work_queue,
-                                       int start,
-                                       FILE *handle);
+WEBRTC_APM_API int webrtc_apm_aec_dump(webrtc_apm ptr, void **work_queue,
+                                       int start, FILE *handle);
 
 #ifdef __cplusplus
 }

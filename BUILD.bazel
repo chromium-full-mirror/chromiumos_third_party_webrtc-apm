@@ -3,42 +3,12 @@
 # found in the LICENSE file.
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
-load("//:defs.bzl", "COPTS")
-
-cc_library(
-    name = "webrtc_apm",
-    srcs = ["webrtc_apm.cc"],
-    hdrs = ["webrtc_apm.h"],
-    copts = COPTS,
-    data = ["@the_quick_brown_fox_wav//file"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//cras-config",
-        "//api/audio:aec3_factory",
-        "//api/task_queue:default_task_queue_factory",
-        "//modules/audio_processing",
-        "//repositories:metrics_library",
-    ],
-)
-
-cc_test(
-    name = "webrtc_apm_test",
-    srcs = ["webrtc_apm_test.cc"],
-    copts = COPTS,
-    linkopts = ["-lm"],
-    deps = [
-        ":webrtc_apm",
-        "@pkg_config//gmock",
-        "@pkg_config//gtest",
-        "@pkg_config//gtest_main",
-    ],
-)
 
 # Tests that are run with the media-sound/adhd ebuild.
 test_suite(
     name = "tests",
     tests = [
-        ":webrtc_apm_test",
+        "//webrtc_apm:webrtc_apm_test",
     ],
     visibility = ["//visibility:public"],
 )

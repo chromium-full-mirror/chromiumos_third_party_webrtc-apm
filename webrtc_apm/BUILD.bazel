@@ -1,0 +1,34 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+load("//:defs.bzl", "COPTS")
+
+cc_library(
+    name = "webrtc_apm",
+    srcs = ["webrtc_apm.cc"],
+    hdrs = ["webrtc_apm.h"],
+    copts = COPTS,
+    data = ["@the_quick_brown_fox_wav//file"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//api/audio:aec3_factory",
+        "//api/task_queue:default_task_queue_factory",
+        "//modules/audio_processing",
+        "//repositories:metrics_library",
+        "//webrtc_apm/cras_config",
+    ],
+)
+
+cc_test(
+    name = "webrtc_apm_test",
+    srcs = ["webrtc_apm_test.cc"],
+    copts = COPTS,
+    linkopts = ["-lm"],
+    deps = [
+        ":webrtc_apm",
+        "@pkg_config//gmock",
+        "@pkg_config//gtest",
+        "@pkg_config//gtest_main",
+    ],
+)

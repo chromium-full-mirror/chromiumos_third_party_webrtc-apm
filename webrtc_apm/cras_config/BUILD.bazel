@@ -5,7 +5,7 @@
 package(default_visibility = ["//:__subpackages__"])
 
 cc_library(
-    name = "cras-config",
+    name = "cras_config",
     srcs = [
         "aec_config.cc",
         "apm_config.cc",
@@ -22,9 +22,9 @@ cc_library(
 )
 
 dict(
-    name = "cras-config_test",
+    name = "cras_config_test",
     deps = [
-        ":cras-config",
+        ":cras_config",
         "@com_google_googletest//:gtest_main",
     ],
 )

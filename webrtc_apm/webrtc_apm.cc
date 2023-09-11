@@ -11,22 +11,19 @@
 #ifdef HAVE_FEATURED
 #include <featured/c_feature_library.h>
 #endif
+#include <errno.h>
 #include <metrics/metrics_library.h>
 
 #include "api/audio/echo_canceller3_factory.h"
 #include "api/task_queue/default_task_queue_factory.h"
-#include "cras-config/aec_config.h"
-#include "cras-config/apm_config.h"
 #include "modules/audio_processing/aec_dump/aec_dump_factory.h"
 #include "modules/audio_processing/include/aec_dump.h"
 #include "modules/audio_processing/include/audio_processing.h"
 #include "rtc_base/task_queue.h"
 #include "system_wrappers/include/metrics.h"
-
-extern "C" {
-#include <errno.h>
-
-#include "webrtc_apm.h"
+#include "webrtc_apm/cras_config/aec_config.h"
+#include "webrtc_apm/cras_config/apm_config.h"
+#include "webrtc_apm/webrtc_apm.h"
 
 using webrtc::metrics::SampleInfo;
 
@@ -67,20 +64,17 @@ static WebRtcApmFeatures get_webrtc_apm_features() {
  * for testing purposes.
  */
 bool configure_gain_controllers(
-    webrtc::AudioProcessing::Config::GainController1* agc1_config,
-    webrtc::AudioProcessing::Config::GainController2* agc2_config,
-    bool use_agc2,
-    bool enable_agc) {
+    webrtc::AudioProcessing::Config::GainController1 *agc1_config,
+    webrtc::AudioProcessing::Config::GainController2 *agc2_config,
+    bool use_agc2, bool enable_agc) {
   bool config_changed = false;
 
   if (!enable_agc) {
-      config_changed =
-          config_changed || agc1_config->enabled != enable_agc;
-      config_changed =
-          config_changed || agc2_config->enabled != enable_agc;
-      agc2_config->enabled = false;
-      agc2_config->enabled = false;
-      return config_changed;
+    config_changed = config_changed || agc1_config->enabled != enable_agc;
+    config_changed = config_changed || agc2_config->enabled != enable_agc;
+    agc2_config->enabled = false;
+    agc2_config->enabled = false;
+    return config_changed;
   }
 
   if (use_agc2) {
@@ -126,11 +120,13 @@ void webrtc_apm_init_metrics(const char *prefix) {
   metrics_lib_ = std::make_unique<MetricsLibrary>();
 }
 
-static webrtc_apm webrtc_apm_create(
-    unsigned int num_channels, unsigned int frame_rate, dictionary *aec_ini,
-    dictionary *apm_ini, unsigned int enforce_aec_on,
-    unsigned int enforce_ns_on, unsigned int enforce_agc_on,
-    WebRtcApmFeatures features) {
+static webrtc_apm webrtc_apm_create(unsigned int num_channels,
+                                    unsigned int frame_rate,
+                                    dictionary *aec_ini, dictionary *apm_ini,
+                                    unsigned int enforce_aec_on,
+                                    unsigned int enforce_ns_on,
+                                    unsigned int enforce_agc_on,
+                                    WebRtcApmFeatures features) {
   int err;
   rtc::scoped_refptr<webrtc::AudioProcessing> *apm_refptr;
   webrtc::AudioProcessing *apm;
@@ -209,14 +205,13 @@ static webrtc_apm webrtc_apm_create(
   return reinterpret_cast<webrtc_apm>(apm_refptr);
 }
 
-
 webrtc_apm webrtc_apm_create_with_enforced_effects(
     unsigned int num_channels, unsigned int frame_rate, dictionary *aec_ini,
     dictionary *apm_ini, unsigned int enforce_aec_on,
     unsigned int enforce_ns_on, unsigned int enforce_agc_on) {
-  return webrtc_apm_create(
-      num_channels, frame_rate, aec_ini, apm_ini, enforce_aec_on, enforce_ns_on,
-      enforce_agc_on, get_webrtc_apm_features());
+  return webrtc_apm_create(num_channels, frame_rate, aec_ini, apm_ini,
+                           enforce_aec_on, enforce_ns_on, enforce_agc_on,
+                           get_webrtc_apm_features());
 }
 
 webrtc_apm webrtc_apm_create_for_testing(
@@ -224,9 +219,9 @@ webrtc_apm webrtc_apm_create_for_testing(
     dictionary *apm_ini, unsigned int enforce_aec_on,
     unsigned int enforce_ns_on, unsigned int enforce_agc_on,
     WebRtcApmFeatures features) {
-  return webrtc_apm_create(
-      num_channels, frame_rate, aec_ini, apm_ini, enforce_aec_on, enforce_ns_on,
-      enforce_agc_on, features);
+  return webrtc_apm_create(num_channels, frame_rate, aec_ini, apm_ini,
+                           enforce_aec_on, enforce_ns_on, enforce_agc_on,
+                           features);
 }
 
 void webrtc_apm_enable_vad(webrtc_apm ptr, bool enable_vad) {
@@ -260,10 +255,11 @@ WEBRTC_APM_API void webrtc_apm_enable_effects(webrtc_apm ptr, bool enable_aec,
       config_changed || config.gain_controller1.enabled != enable_agc;
   config.gain_controller1.enabled = enable_agc;
 
-  config_changed = config_changed || configure_gain_controllers(
-      /*agc1_config=*/&config.gain_controller1,
-      /*agc2_config=*/&config.gain_controller2,
-      /*use_agc2=*/features.agc2_enabled, enable_agc);
+  config_changed =
+      config_changed || configure_gain_controllers(
+                            /*agc1_config=*/&config.gain_controller1,
+                            /*agc2_config=*/&config.gain_controller2,
+                            /*use_agc2=*/features.agc2_enabled, enable_agc);
 
   if (config_changed) {
     apm->ApplyConfig(config);
@@ -361,5 +357,3 @@ int webrtc_apm_aec_dump(webrtc_apm ptr, void **wq_ptr, int start,
   }
   return 0;
 }
-
-}  // extern "C"
