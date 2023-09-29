@@ -63,7 +63,7 @@ TEST_P(VADTest, Speech) {
   std::vector<float> buffer(480);
 
   std::vector<int> detected;
-  for (int i = 0; i < 40; i++) {
+  for (int i = 0; i < 60; i++) {
     ASSERT_EQ(wav.ReadSamples(buffer.size(), buffer.data()), buffer.size());
     float* ptr = buffer.data();
     webrtc_apm_process_stream_f(apm_, 1, 48000, &ptr);
