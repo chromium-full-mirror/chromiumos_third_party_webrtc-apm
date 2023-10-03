@@ -15,7 +15,9 @@ cc_library(
     copts = COPTS,
     deps = [
         ":task_queue",
+        "//api:field_trials_view",
         "//rtc_base:rtc_task_queue_libevent",
+        "//rtc_base/memory:always_valid_pointer",
     ],
 )
 
@@ -23,17 +25,19 @@ cc_library(
     name = "task_queue",
     srcs = ["task_queue_base.cc"],
     hdrs = [
-        "queued_task.h",
         "task_queue_base.h",
         "task_queue_factory.h",
     ],
     copts = COPTS,
     deps = [
+        "//api:location",
+        "//api/units:time_delta",
         "//rtc_base:checks",
         "//rtc_base:macromagic",
         "//rtc_base/system:rtc_export",
         "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/strings",
     ],
 )

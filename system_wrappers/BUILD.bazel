@@ -25,9 +25,12 @@ cc_library(
     hdrs = ["include/field_trial.h"],
     copts = COPTS,
     deps = [
+        "//experiments:registered_field_trials",
         "//rtc_base:checks",
         "//rtc_base:logging",
         "//rtc_base:stringutils",
+        "//rtc_base/containers:flat_set",
+        "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -39,8 +42,10 @@ cc_library(
     copts = COPTS,
     deps = [
         "//rtc_base:checks",
-        "//rtc_base:rtc_base_approved",
+        "//rtc_base:macromagic",
+        "//rtc_base:stringutils",
         "//rtc_base/synchronization:mutex",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -69,8 +74,10 @@ cc_library(
         "//api/units:timestamp",
         "//modules:module_api_public",
         "//rtc_base:checks",
-        "//rtc_base:rtc_base_approved",
+        "//rtc_base:logging",
         "//rtc_base:rtc_numerics",
+        "//rtc_base:safe_conversions",
+        "//rtc_base:timeutils",
         "//rtc_base/synchronization:mutex",
         "//rtc_base/system:arch",
         "//rtc_base/system:rtc_export",

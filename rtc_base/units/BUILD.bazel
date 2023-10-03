@@ -14,6 +14,7 @@ cc_library(
     copts = COPTS,
     deps = [
         "//rtc_base:checks",
+        "//rtc_base:divide_round",
         "//rtc_base:safe_conversions",
     ],
 )

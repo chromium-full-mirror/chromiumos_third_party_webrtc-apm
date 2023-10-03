@@ -10,7 +10,6 @@ package(
 
 cc_library(
     name = "mutex",
-    srcs = ["mutex.cc"],
     hdrs = [
         "mutex.h",
         "mutex_critical_section.h",

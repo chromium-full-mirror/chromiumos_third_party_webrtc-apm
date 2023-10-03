@@ -28,7 +28,7 @@ cc_library(
         "//common_audio:common_audio_c",
         "//modules/audio_processing/utility:legacy_delay_estimator",
         "//rtc_base:checks",
-        "//rtc_base:rtc_base_approved",
+        "//rtc_base:safe_conversions",
         "//rtc_base:sanitizer",
         "//system_wrappers",
     ],

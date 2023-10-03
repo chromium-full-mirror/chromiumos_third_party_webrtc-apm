@@ -27,7 +27,10 @@ cc_library(
     deps = [
         "//api:array_view",
         "//api/units:data_rate",
-        "//rtc_base:rtc_base_approved",
+        "//api/units:time_delta",
+        "//rtc_base:logging",
+        "//rtc_base:safe_conversions",
+        "//rtc_base:stringutils",
         "//rtc_base/system:rtc_export",
         "@com_google_absl//absl/container:inlined_vector",
         "@com_google_absl//absl/types:optional",

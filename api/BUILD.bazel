@@ -19,10 +19,34 @@ cc_library(
 )
 
 cc_library(
+    name = "field_trials_view",
+    hdrs = ["field_trials_view.h"],
+    copts = COPTS,
+    deps = [
+        "//rtc_base/system:rtc_export",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
     name = "function_view",
     hdrs = ["function_view.h"],
     copts = COPTS,
     deps = ["//rtc_base:checks"],
+)
+
+cc_library(
+    name = "location",
+    hdrs = ["location.h"],
+    copts = COPTS,
+    deps = ["//rtc_base/system:rtc_export"],
+)
+
+cc_library(
+    name = "make_ref_counted",
+    hdrs = ["make_ref_counted.h"],
+    copts = COPTS,
+    deps = ["//rtc_base:refcount"],
 )
 
 cc_library(
@@ -58,11 +82,12 @@ cc_library(
     copts = COPTS,
     deps = [
         ":array_view",
+        ":make_ref_counted",
         ":refcountedbase",
         ":rtp_headers",
         ":scoped_refptr",
+        "//api/units:time_delta",
         "//api/units:timestamp",
-        "//rtc_base:rtc_base_approved",
         "//rtc_base/system:rtc_export",
         "@com_google_absl//absl/types:optional",
     ],

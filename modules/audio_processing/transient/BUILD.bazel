@@ -37,6 +37,7 @@ cc_library(
     copts = COPTS,
     deps = [
         ":transient_suppressor_api",
+        ":voice_probability_delay_unit",
         "//common_audio",
         "//common_audio:common_audio_c",
         "//common_audio:fir_filter",
@@ -46,4 +47,12 @@ cc_library(
         "//rtc_base:gtest_prod",
         "//rtc_base:logging",
     ],
+)
+
+cc_library(
+    name = "voice_probability_delay_unit",
+    srcs = ["voice_probability_delay_unit.cc"],
+    hdrs = ["voice_probability_delay_unit.h"],
+    copts = COPTS,
+    deps = ["//rtc_base:checks"],
 )

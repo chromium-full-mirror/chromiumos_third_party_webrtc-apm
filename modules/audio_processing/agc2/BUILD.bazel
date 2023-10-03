@@ -9,40 +9,21 @@ package(
 )
 
 cc_library(
-    name = "adaptive_digital",
-    srcs = [
-        "adaptive_digital_gain_applier.cc",
-        "adaptive_digital_gain_controller.cc",
-        "adaptive_mode_level_estimator.cc",
-        "saturation_protector.cc",
-        "saturation_protector_buffer.cc",
-    ],
-    hdrs = [
-        "adaptive_digital_gain_applier.h",
-        "adaptive_digital_gain_controller.h",
-        "adaptive_mode_level_estimator.h",
-        "saturation_protector.h",
-        "saturation_protector_buffer.h",
-    ],
+    name = "adaptive_digital_gain_controller",
+    srcs = ["adaptive_digital_gain_controller.cc"],
+    hdrs = ["adaptive_digital_gain_controller.h"],
     copts = COPTS,
     deps = [
         ":common",
-        ":cpu_features",
         ":gain_applier",
-        ":noise_level_estimator",
-        ":vad_wrapper",
-        "//api:array_view",
         "//common_audio",
         "//modules/audio_processing:api",
         "//modules/audio_processing:apm_logging",
         "//modules/audio_processing:audio_frame_view",
         "//rtc_base:checks",
         "//rtc_base:logging",
-        "//rtc_base:rtc_base_approved",
-        "//rtc_base:safe_compare",
         "//rtc_base:safe_minmax",
         "//system_wrappers:metrics",
-        "@com_google_absl//absl/types:optional",
     ],
 )
 
@@ -53,7 +34,30 @@ cc_library(
     copts = COPTS,
     deps = [
         "//api:array_view",
-        "//rtc_base:rtc_base_approved",
+        "//rtc_base:macromagic",
+    ],
+)
+
+cc_library(
+    name = "clipping_predictor",
+    srcs = [
+        "clipping_predictor.cc",
+        "clipping_predictor_level_buffer.cc",
+    ],
+    hdrs = [
+        "clipping_predictor.h",
+        "clipping_predictor_level_buffer.h",
+    ],
+    copts = COPTS,
+    deps = [
+        ":gain_map",
+        "//common_audio",
+        "//modules/audio_processing:api",
+        "//modules/audio_processing:audio_frame_view",
+        "//rtc_base:checks",
+        "//rtc_base:logging",
+        "//rtc_base:safe_minmax",
+        "@com_google_absl//absl/types:optional",
     ],
 )
 
@@ -96,10 +100,11 @@ cc_library(
         "//modules/audio_processing:audio_frame_view",
         "//rtc_base:checks",
         "//rtc_base:gtest_prod",
-        "//rtc_base:rtc_base_approved",
         "//rtc_base:safe_conversions",
         "//rtc_base:safe_minmax",
+        "//rtc_base:stringutils",
         "//system_wrappers:metrics",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -117,6 +122,57 @@ cc_library(
 )
 
 cc_library(
+    name = "gain_map",
+    hdrs = ["gain_map_internal.h"],
+    copts = COPTS,
+)
+
+cc_library(
+    name = "input_volume_controller",
+    srcs = [
+        "input_volume_controller.cc",
+        "speech_probability_buffer.cc",
+    ],
+    hdrs = [
+        "input_volume_controller.h",
+        "speech_probability_buffer.h",
+    ],
+    copts = COPTS,
+    deps = [
+        ":clipping_predictor",
+        ":gain_map",
+        ":input_volume_stats_reporter",
+        "//api:array_view",
+        "//modules/audio_processing:api",
+        "//modules/audio_processing:audio_buffer",
+        "//modules/audio_processing:audio_frame_view",
+        "//rtc_base:checks",
+        "//rtc_base:gtest_prod",
+        "//rtc_base:logging",
+        "//rtc_base:safe_minmax",
+        "//system_wrappers:field_trial",
+        "//system_wrappers:metrics",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "input_volume_stats_reporter",
+    srcs = ["input_volume_stats_reporter.cc"],
+    hdrs = ["input_volume_stats_reporter.h"],
+    copts = COPTS,
+    deps = [
+        "//rtc_base:gtest_prod",
+        "//rtc_base:logging",
+        "//rtc_base:safe_minmax",
+        "//rtc_base:stringutils",
+        "//system_wrappers:metrics",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
     name = "noise_level_estimator",
     srcs = ["noise_level_estimator.cc"],
     hdrs = ["noise_level_estimator.h"],
@@ -128,6 +184,43 @@ cc_library(
         "//modules/audio_processing:audio_frame_view",
         "//rtc_base:checks",
         "//system_wrappers",
+    ],
+)
+
+cc_library(
+    name = "saturation_protector",
+    srcs = [
+        "saturation_protector.cc",
+        "saturation_protector_buffer.cc",
+    ],
+    hdrs = [
+        "saturation_protector.h",
+        "saturation_protector_buffer.h",
+    ],
+    copts = COPTS,
+    deps = [
+        ":common",
+        "//modules/audio_processing:apm_logging",
+        "//rtc_base:checks",
+        "//rtc_base:safe_compare",
+        "//rtc_base:safe_minmax",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "speech_level_estimator",
+    srcs = ["speech_level_estimator.cc"],
+    hdrs = ["speech_level_estimator.h"],
+    copts = COPTS,
+    deps = [
+        ":common",
+        "//api:array_view",
+        "//modules/audio_processing:api",
+        "//modules/audio_processing:apm_logging",
+        "//rtc_base:checks",
+        "//rtc_base:logging",
+        "//rtc_base:safe_minmax",
     ],
 )
 

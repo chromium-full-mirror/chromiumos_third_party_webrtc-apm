@@ -14,9 +14,9 @@ cc_library(
     copts = COPTS,
     deps = [
         "//modules/audio_processing:aec_dump_interface",
-        "//rtc_base:rtc_base_approved",
         "//rtc_base/system:file_wrapper",
         "//rtc_base/system:rtc_export",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -25,12 +25,10 @@ cc_library(
     srcs = [
         "aec_dump_impl.cc",
         "capture_stream_info.cc",
-        "write_to_file_task.cc",
     ],
     hdrs = [
         "aec_dump_impl.h",
         "capture_stream_info.h",
-        "write_to_file_task.h",
     ],
     copts = COPTS,
     deps = [
@@ -41,10 +39,14 @@ cc_library(
         "//modules/audio_processing:audioproc_debug_proto",
         "//rtc_base:checks",
         "//rtc_base:ignore_wundef",
+        "//rtc_base:logging",
+        "//rtc_base:macromagic",
         "//rtc_base:protobuf_utils",
-        "//rtc_base:rtc_base_approved",
+        "//rtc_base:race_checker",
+        "//rtc_base:rtc_event",
         "//rtc_base:rtc_task_queue",
         "//rtc_base/system:file_wrapper",
         "//system_wrappers",
+        "@com_google_absl//absl/strings",
     ],
 )

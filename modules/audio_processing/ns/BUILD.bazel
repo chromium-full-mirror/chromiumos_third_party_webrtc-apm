@@ -53,7 +53,6 @@ cc_library(
         "//modules/audio_processing:high_pass_filter",
         "//modules/audio_processing/utility:cascaded_biquad_filter",
         "//rtc_base:checks",
-        "//rtc_base:rtc_base_approved",
         "//rtc_base:safe_minmax",
         "//rtc_base/system:arch",
         "//system_wrappers",
