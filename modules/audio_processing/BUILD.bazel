@@ -191,6 +191,20 @@ cc_proto_library(
     deps = [":debug_proto"],
 )
 
+cc_library(
+    name = "audioproc_protobuf_utils",
+    srcs = ["//modules/audio_processing/test:protobuf_utils.cc"],
+    hdrs = ["//modules/audio_processing/test:protobuf_utils.h"],
+    copts = COPTS,
+    deps = [
+        ":audioproc_debug_proto",
+        "//rtc_base:checks",
+        "//rtc_base:ignore_wundef",
+        "//rtc_base:protobuf_utils",
+        "//rtc_base/system:arch",
+    ],
+)
+
 proto_library(
     name = "debug_proto",
     srcs = ["debug.proto"],

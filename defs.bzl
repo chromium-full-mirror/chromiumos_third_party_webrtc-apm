@@ -8,6 +8,7 @@ COPTS = [
     "-DWEBRTC_APM_DEBUG_DUMP=0",
     "-DWEBRTC_INTELLIGIBILITY_ENHANCER=0",
     "-DWEBRTC_NS_FLOAT=1",
+    "-DWEBRTC_ENABLE_PROTOBUF=1",
     # Disable warnings.
     "-Wno-unknown-warning-option",
     "-Wno-deprecated-declarations",
