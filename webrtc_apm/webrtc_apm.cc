@@ -139,6 +139,16 @@ static webrtc_apm webrtc_apm_create(unsigned int num_channels,
   webrtc::AudioProcessingBuilder apm_builder;
   webrtc::EchoCanceller3Config aec3_config;
 
+  // b/305847459: Reject weird channels counts.
+  // Revisit this when we really need to handle with more channels.
+  switch (num_channels) {
+    case 1:
+    case 2:
+      break;
+    default:
+      return nullptr;
+  }
+
   /* Set the AEC-tunings. */
   if (aec_ini) {
     aec_config_get(aec_ini, &aec3_config);
