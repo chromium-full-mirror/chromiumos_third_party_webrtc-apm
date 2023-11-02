@@ -15,8 +15,8 @@
 
 #if WEBRTC_ENABLE_PROTOBUF
 
-#include "google/protobuf/message_lite.h"
-#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/message_lite.h"  // nogncheck
+#include "google/protobuf/repeated_field.h"  // nogncheck
 
 namespace webrtc {
 
