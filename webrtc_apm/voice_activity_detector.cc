@@ -32,6 +32,8 @@ class VoiceActivityDetectorImpl : public VoiceActivityDetector {
   bool HasActivity() const override { return active_speech_; }
   void Enable(bool enable) override { voice_detection_enabled_ = enable; }
 
+  bool IsEnabled() const override { return voice_detection_enabled_; }
+
  private:
   int sample_rate_;
   int ten_ms_buffer_size_;

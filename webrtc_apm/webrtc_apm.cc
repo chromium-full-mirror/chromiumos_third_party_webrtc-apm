@@ -363,3 +363,13 @@ int webrtc_apm_aec_dump(webrtc_apm ptr, void **wq_ptr, int start,
   }
   return 0;
 }
+
+struct WebRtcApmActiveEffects webrtc_apm_get_active_effects(webrtc_apm ptr) {
+  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
+  webrtc::AudioProcessing::Config config = webrtc_apm_ptr->apm->GetConfig();
+  return {
+      .echo_cancellation = config.echo_canceller.enabled,
+      .noise_suppression = config.noise_suppression.enabled,
+      .voice_activity_detection = webrtc_apm_ptr->vad->IsEnabled(),
+  };
+}

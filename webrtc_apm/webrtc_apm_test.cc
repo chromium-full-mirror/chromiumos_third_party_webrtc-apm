@@ -14,12 +14,22 @@
 namespace {
 
 TEST(WebRTCAPM, Smoke) {
-  dictionary* aec_ini = dictionary_new(0);
-  dictionary* apm_ini = dictionary_new(0);
-  webrtc_apm apm = webrtc_apm_create_with_enforced_effects(1, 48000, aec_ini,
-                                                           apm_ini, 0, 0, 0);
-  dictionary_del(aec_ini);
-  dictionary_del(apm_ini);
+  webrtc_apm apm = webrtc_apm_create_with_enforced_effects(1, 48000, nullptr,
+                                                           nullptr, 1, 0, 0);
+  EXPECT_TRUE(webrtc_apm_get_active_effects(apm).echo_cancellation);
+  EXPECT_FALSE(webrtc_apm_get_active_effects(apm).noise_suppression);
+  EXPECT_FALSE(webrtc_apm_get_active_effects(apm).voice_activity_detection);
+
+  webrtc_apm_enable_effects(apm, false, true, false);
+  EXPECT_FALSE(webrtc_apm_get_active_effects(apm).echo_cancellation);
+  EXPECT_TRUE(webrtc_apm_get_active_effects(apm).noise_suppression);
+  EXPECT_FALSE(webrtc_apm_get_active_effects(apm).voice_activity_detection);
+
+  webrtc_apm_enable_vad(apm, true);
+  EXPECT_FALSE(webrtc_apm_get_active_effects(apm).echo_cancellation);
+  EXPECT_TRUE(webrtc_apm_get_active_effects(apm).noise_suppression);
+  EXPECT_TRUE(webrtc_apm_get_active_effects(apm).voice_activity_detection);
+
   webrtc_apm_destroy(apm);
 }
 
@@ -35,6 +45,7 @@ class VADTest : public ::testing::TestWithParam<VADParam> {
     apm_ = webrtc_apm_create_with_enforced_effects(1, 48000, aec_ini_, apm_ini_,
                                                    GetParam().enable_aec, 0, 0);
     webrtc_apm_enable_vad(apm_, true);
+    EXPECT_TRUE(webrtc_apm_get_active_effects(apm_).voice_activity_detection);
   }
 
   void TearDown() override {

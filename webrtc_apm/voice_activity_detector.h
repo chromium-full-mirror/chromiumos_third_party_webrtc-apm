@@ -20,6 +20,7 @@ class VoiceActivityDetector {
   virtual void Process(float* const* audio, int num_channels, int rate) = 0;
   virtual bool HasActivity() const = 0;
   virtual void Enable(bool enable) = 0;
+  virtual bool IsEnabled() const = 0;
 };
 
 #endif  // VOICE_ACTIVITY_DETECTOR_H_

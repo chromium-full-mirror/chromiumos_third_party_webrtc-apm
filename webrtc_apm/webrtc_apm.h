@@ -58,6 +58,12 @@ typedef struct {
   bool agc2_enabled;
 } WebRtcApmFeatures;
 
+struct WebRtcApmActiveEffects {
+  bool echo_cancellation;
+  bool noise_suppression;
+  bool voice_activity_detection;
+};
+
 /* Creates a webrtc_apm for forward stream properties using optional enforcement
  * of the effects that are specified in the config files. In CRAS use case it
  * is usually created for input stream.
@@ -152,6 +158,10 @@ WEBRTC_APM_API int webrtc_apm_set_stream_delay(webrtc_apm ptr, int delay_ms);
  */
 WEBRTC_APM_API int webrtc_apm_aec_dump(webrtc_apm ptr, void **work_queue,
                                        int start, FILE *handle);
+
+/* Return the active effects on the APM. */
+WEBRTC_APM_API struct WebRtcApmActiveEffects
+webrtc_apm_get_active_effects(webrtc_apm ptr);
 
 #ifdef __cplusplus
 }
