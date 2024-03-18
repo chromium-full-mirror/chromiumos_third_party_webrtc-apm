@@ -7,12 +7,12 @@ load("//:defs.bzl", "COPTS")
 cc_library(
     name = "webrtc_apm",
     srcs = [
-        "webrtc_apm.cc",
         "voice_activity_detector.cc",
+        "voice_activity_detector.h",
+        "webrtc_apm.cc",
     ],
     hdrs = [
         "webrtc_apm.h",
-        "voice_activity_detector.h",
     ],
     copts = COPTS,
     data = ["@the_quick_brown_fox_wav//file"],
@@ -24,6 +24,14 @@ cc_library(
         "//repositories:metrics_library",
         "//webrtc_apm/cras_config",
     ],
+)
+
+# TODO(b/268268938): Remove stub usage from stream_apm_unittest and remove this.
+cc_library(
+    name = "header_only_DO_NOT_USE",
+    testonly = True,
+    hdrs = ["webrtc_apm.h"],
+    visibility = ["@adhd//cras/src/tests:__pkg__"],
 )
 
 cc_test(
