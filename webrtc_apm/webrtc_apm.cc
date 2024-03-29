@@ -35,6 +35,7 @@ static std::unique_ptr<MetricsLibraryInterface> metrics_lib_;
 struct WebRtcApm {
   rtc::scoped_refptr<webrtc::AudioProcessing> apm;
   std::unique_ptr<VoiceActivityDetector> vad;
+  WebRtcApmStats stats = {};
 };
 
 #if !defined(HAVE_FEATURED) || defined(BYPASS_FEATURE_CHECK)
@@ -283,8 +284,11 @@ void webrtc_apm_dump_configs(dictionary *apm_ini, dictionary *aec_ini) {
 
 int webrtc_apm_process_reverse_stream_f(webrtc_apm ptr, int num_channels,
                                         int rate, float *const *data) {
-  webrtc::StreamConfig config = webrtc::StreamConfig(rate, num_channels);
   WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
+
+  webrtc_apm_ptr->stats.reverse_blocks_processed++;
+
+  webrtc::StreamConfig config = webrtc::StreamConfig(rate, num_channels);
   webrtc::AudioProcessing *apm = webrtc_apm_ptr->apm.get();
 
   return apm->ProcessReverseStream(data, config, config, data);
@@ -292,9 +296,12 @@ int webrtc_apm_process_reverse_stream_f(webrtc_apm ptr, int num_channels,
 
 int webrtc_apm_process_stream_f(webrtc_apm ptr, int num_channels, int rate,
                                 float *const *data) {
+  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
+
+  webrtc_apm_ptr->stats.forward_blocks_processed++;
+
   webrtc::StreamConfig iconfig = webrtc::StreamConfig(rate, num_channels);
   webrtc::StreamConfig oconfig = webrtc::StreamConfig(rate, 1);
-  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
   webrtc::AudioProcessing *apm = webrtc_apm_ptr->apm.get();
   int ret = apm->ProcessStream(data, iconfig, oconfig, data);
   webrtc_apm_ptr->vad->Process(data, num_channels, rate);
@@ -372,4 +379,9 @@ struct WebRtcApmActiveEffects webrtc_apm_get_active_effects(webrtc_apm ptr) {
       .noise_suppression = config.noise_suppression.enabled,
       .voice_activity_detection = webrtc_apm_ptr->vad->IsEnabled(),
   };
+}
+
+struct WebRtcApmStats webrtc_apm_get_stats(webrtc_apm ptr) {
+  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
+  return webrtc_apm_ptr->stats;
 }

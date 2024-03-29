@@ -160,8 +160,16 @@ WEBRTC_APM_API int webrtc_apm_aec_dump(webrtc_apm ptr, void **work_queue,
                                        int start, FILE *handle);
 
 /* Return the active effects on the APM. */
-WEBRTC_APM_API struct WebRtcApmActiveEffects
-webrtc_apm_get_active_effects(webrtc_apm ptr);
+WEBRTC_APM_API struct WebRtcApmActiveEffects webrtc_apm_get_active_effects(
+    webrtc_apm ptr);
+
+struct WebRtcApmStats {
+  uint64_t forward_blocks_processed;
+  uint64_t reverse_blocks_processed;
+};
+
+/* Return the stats of the APM. */
+WEBRTC_APM_API struct WebRtcApmStats webrtc_apm_get_stats(webrtc_apm ptr);
 
 #ifdef __cplusplus
 }

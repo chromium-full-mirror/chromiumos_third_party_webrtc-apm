@@ -33,6 +33,29 @@ TEST(WebRTCAPM, Smoke) {
   webrtc_apm_destroy(apm);
 }
 
+TEST(WebRTCAPM, Stats) {
+  webrtc_apm apm = webrtc_apm_create_with_enforced_effects(1, 48000, nullptr,
+                                                           nullptr, 1, 0, 0);
+
+  EXPECT_EQ(webrtc_apm_get_stats(apm).forward_blocks_processed, 0);
+  EXPECT_EQ(webrtc_apm_get_stats(apm).reverse_blocks_processed, 0);
+
+  std::vector<float> buffer(480);
+
+  float* ptr = buffer.data();
+  webrtc_apm_process_stream_f(apm, 1, 48000, &ptr);
+
+  EXPECT_EQ(webrtc_apm_get_stats(apm).forward_blocks_processed, 1);
+  EXPECT_EQ(webrtc_apm_get_stats(apm).reverse_blocks_processed, 0);
+
+  webrtc_apm_process_reverse_stream_f(apm, 1, 48000, &ptr);
+
+  EXPECT_EQ(webrtc_apm_get_stats(apm).forward_blocks_processed, 1);
+  EXPECT_EQ(webrtc_apm_get_stats(apm).reverse_blocks_processed, 1);
+
+  webrtc_apm_destroy(apm);
+}
+
 struct VADParam {
   bool enable_aec = false;
 };
