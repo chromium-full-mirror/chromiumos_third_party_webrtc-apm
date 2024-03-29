@@ -12,3 +12,7 @@ build --action_env=CC=clang --action_env=CXX=clang++
 
 # Protobuf
 build --copt=-Wno-unused-function
+build --copt=-Wno-deprecated-non-prototype
+
+# b/316075428: Disable bzlmod for now, to avoid generating MODULE.bazel files.
+common --noexperimental_enable_bzlmod
