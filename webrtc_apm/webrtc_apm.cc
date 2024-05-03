@@ -140,16 +140,6 @@ static webrtc_apm webrtc_apm_create(unsigned int num_channels,
   webrtc::AudioProcessingBuilder apm_builder;
   webrtc::EchoCanceller3Config aec3_config;
 
-  // b/305847459: Reject weird channels counts.
-  // Revisit this when we really need to handle with more channels.
-  switch (num_channels) {
-    case 1:
-    case 2:
-      break;
-    default:
-      return nullptr;
-  }
-
   /* Set the AEC-tunings. */
   if (aec_ini) {
     aec_config_get(aec_ini, &aec3_config);
@@ -196,13 +186,18 @@ static webrtc_apm webrtc_apm_create(unsigned int num_channels,
     config_changed = true;
   }
 
+  if (num_channels > 1) {
+    config.pipeline.multi_channel_capture = true;
+    config_changed = true;
+  }
+
   if (config_changed) {
     apm->ApplyConfig(config);
   }
 
   const webrtc::ProcessingConfig processing_config = {{
       webrtc::StreamConfig(frame_rate, num_channels),  // kInputStream
-      webrtc::StreamConfig(frame_rate, 1),             // kOutputStream
+      webrtc::StreamConfig(frame_rate, num_channels),  // kOutputStream
       webrtc::StreamConfig(frame_rate, num_channels),  // kReverseInputStream
       webrtc::StreamConfig(frame_rate, num_channels),  // kReverseOutputStream
   }};
@@ -301,7 +296,7 @@ int webrtc_apm_process_stream_f(webrtc_apm ptr, int num_channels, int rate,
   webrtc_apm_ptr->stats.forward_blocks_processed++;
 
   webrtc::StreamConfig iconfig = webrtc::StreamConfig(rate, num_channels);
-  webrtc::StreamConfig oconfig = webrtc::StreamConfig(rate, 1);
+  webrtc::StreamConfig oconfig = webrtc::StreamConfig(rate, num_channels);
   webrtc::AudioProcessing *apm = webrtc_apm_ptr->apm.get();
   int ret = apm->ProcessStream(data, iconfig, oconfig, data);
   webrtc_apm_ptr->vad->Process(data, num_channels, rate);
