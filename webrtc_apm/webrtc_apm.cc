@@ -146,8 +146,17 @@ static webrtc_apm webrtc_apm_create(
   webrtc::EchoCanceller3Config aec3_config;
 
   /* Set the AEC-tunings. */
+  bool use_aec3_config = false;
   if (aec_ini) {
     aec_config_get(aec_ini, &aec3_config);
+    use_aec3_config = true;
+  }
+  if (webrtc_apm_config->aec3_fixed_capture_delay_samples) {
+    aec3_config.delay.fixed_capture_delay_samples =
+        webrtc_apm_config->aec3_fixed_capture_delay_samples;
+    use_aec3_config = true;
+  }
+  if (use_aec3_config) {
     std::unique_ptr<webrtc::EchoControlFactory> ec3_factory;
     ec3_factory.reset(new webrtc::EchoCanceller3Factory(aec3_config));
     apm_builder.SetEchoControlFactory(std::move(ec3_factory));

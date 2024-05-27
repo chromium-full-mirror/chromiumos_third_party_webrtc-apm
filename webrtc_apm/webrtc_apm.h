@@ -35,6 +35,9 @@ struct WebRtcApmConfig {
   bool enforce_ns_on;
   // enforces the agc to be activated regardless of settings in apm.ini.
   bool enforce_agc_on;
+  // If not zero, sets
+  // webrtc::EchoCanceller3Config::Delay::fixed_capture_delay_samples.
+  size_t aec3_fixed_capture_delay_samples;
 };
 
 /* Creates a webrtc_apm for forward stream properties using optional enforcement
