@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 package(default_visibility = ["//:__subpackages__"])
 
 cc_library(
@@ -15,8 +17,8 @@ cc_library(
         "apm_config.h",
     ],
     deps = [
-        "//modules/audio_processing",
         "//api/audio:aec3_factory",
+        "//modules/audio_processing",
         "@iniparser",
     ],
 )

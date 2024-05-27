@@ -63,14 +63,16 @@ VoiceActivityDetectorImpl::VoiceActivityDetectorImpl(int sample_rate,
                                                      VadInst* vad)
     : sample_rate_(sample_rate),
       ten_ms_buffer_size_(sample_rate * 10 / 1000),
-      resampler_(std::make_unique<webrtc::PushSincResampler>(
-          ten_ms_buffer_size_, kNumSamples10MsAt8k)),
+      resampler_(
+          std::make_unique<webrtc::PushSincResampler>(ten_ms_buffer_size_,
+                                                      kNumSamples10MsAt8k)),
       vad_(vad) {
   // Set the VAD in most aggressive mode.
   WebRtcVad_set_mode(vad_, /*mode=*/3);
 }
 
-void VoiceActivityDetectorImpl::Process(float* const* audio, int num_channels,
+void VoiceActivityDetectorImpl::Process(float* const* audio,
+                                        int num_channels,
                                         int sample_rate) {
   active_speech_ = false;
   if (!voice_detection_enabled_) {

@@ -72,9 +72,10 @@ static WebRtcApmFeatures get_webrtc_apm_features() {
  * for testing purposes.
  */
 bool configure_gain_controllers(
-    webrtc::AudioProcessing::Config::GainController1 *agc1_config,
-    webrtc::AudioProcessing::Config::GainController2 *agc2_config,
-    bool use_agc2, bool enable_agc) {
+    webrtc::AudioProcessing::Config::GainController1* agc1_config,
+    webrtc::AudioProcessing::Config::GainController2* agc2_config,
+    bool use_agc2,
+    bool enable_agc) {
   bool config_changed = false;
 
   if (!enable_agc) {
@@ -120,8 +121,10 @@ bool configure_gain_controllers(
   return config_changed;
 }
 
-void webrtc_apm_init_metrics(const char *prefix) {
-  if (prefix == NULL) return;
+void webrtc_apm_init_metrics(const char* prefix) {
+  if (prefix == NULL) {
+    return;
+  }
 
   webrtc::metrics::Enable();
   hist_name_prefix_ = prefix;
@@ -130,13 +133,14 @@ void webrtc_apm_init_metrics(const char *prefix) {
 
 static webrtc_apm webrtc_apm_create(unsigned int num_channels,
                                     unsigned int frame_rate,
-                                    dictionary *aec_ini, dictionary *apm_ini,
+                                    dictionary* aec_ini,
+                                    dictionary* apm_ini,
                                     unsigned int enforce_aec_on,
                                     unsigned int enforce_ns_on,
                                     unsigned int enforce_agc_on,
                                     WebRtcApmFeatures features) {
   int err;
-  webrtc::AudioProcessing *apm;
+  webrtc::AudioProcessing* apm;
   webrtc::AudioProcessingBuilder apm_builder;
   webrtc::EchoCanceller3Config aec3_config;
 
@@ -148,7 +152,7 @@ static webrtc_apm webrtc_apm_create(unsigned int num_channels,
     apm_builder.SetEchoControlFactory(std::move(ec3_factory));
   }
 
-  WebRtcApm *webrtc_apm_state = new WebRtcApm();
+  WebRtcApm* webrtc_apm_state = new WebRtcApm();
   webrtc_apm_state->apm = apm_builder.Create();
   apm = webrtc_apm_state->apm.get();
 
@@ -218,33 +222,42 @@ static webrtc_apm webrtc_apm_create(unsigned int num_channels,
 }
 
 webrtc_apm webrtc_apm_create_with_enforced_effects(
-    unsigned int num_channels, unsigned int frame_rate, dictionary *aec_ini,
-    dictionary *apm_ini, unsigned int enforce_aec_on,
-    unsigned int enforce_ns_on, unsigned int enforce_agc_on) {
+    unsigned int num_channels,
+    unsigned int frame_rate,
+    dictionary* aec_ini,
+    dictionary* apm_ini,
+    unsigned int enforce_aec_on,
+    unsigned int enforce_ns_on,
+    unsigned int enforce_agc_on) {
   return webrtc_apm_create(num_channels, frame_rate, aec_ini, apm_ini,
                            enforce_aec_on, enforce_ns_on, enforce_agc_on,
                            get_webrtc_apm_features());
 }
 
-webrtc_apm webrtc_apm_create_for_testing(
-    unsigned int num_channels, unsigned int frame_rate, dictionary *aec_ini,
-    dictionary *apm_ini, unsigned int enforce_aec_on,
-    unsigned int enforce_ns_on, unsigned int enforce_agc_on,
-    WebRtcApmFeatures features) {
+webrtc_apm webrtc_apm_create_for_testing(unsigned int num_channels,
+                                         unsigned int frame_rate,
+                                         dictionary* aec_ini,
+                                         dictionary* apm_ini,
+                                         unsigned int enforce_aec_on,
+                                         unsigned int enforce_ns_on,
+                                         unsigned int enforce_agc_on,
+                                         WebRtcApmFeatures features) {
   return webrtc_apm_create(num_channels, frame_rate, aec_ini, apm_ini,
                            enforce_aec_on, enforce_ns_on, enforce_agc_on,
                            features);
 }
 
 void webrtc_apm_enable_vad(webrtc_apm ptr, bool enable_vad) {
-  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
+  WebRtcApm* webrtc_apm_ptr = reinterpret_cast<WebRtcApm*>(ptr);
   webrtc_apm_ptr->vad->Enable(enable_vad);
 }
 
-WEBRTC_APM_API void webrtc_apm_enable_effects(webrtc_apm ptr, bool enable_aec,
-                                              bool enable_ns, bool enable_agc) {
-  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
-  webrtc::AudioProcessing *apm = webrtc_apm_ptr->apm.get();
+WEBRTC_APM_API void webrtc_apm_enable_effects(webrtc_apm ptr,
+                                              bool enable_aec,
+                                              bool enable_ns,
+                                              bool enable_agc) {
+  WebRtcApm* webrtc_apm_ptr = reinterpret_cast<WebRtcApm*>(ptr);
+  webrtc::AudioProcessing* apm = webrtc_apm_ptr->apm.get();
   webrtc::AudioProcessing::Config config = apm->GetConfig();
   bool config_changed = false;
 
@@ -272,92 +285,107 @@ WEBRTC_APM_API void webrtc_apm_enable_effects(webrtc_apm ptr, bool enable_aec,
   }
 }
 
-void webrtc_apm_dump_configs(dictionary *apm_ini, dictionary *aec_ini) {
-  if (apm_ini) apm_config_dump(apm_ini);
-  if (aec_ini) aec_config_dump(aec_ini);
+void webrtc_apm_dump_configs(dictionary* apm_ini, dictionary* aec_ini) {
+  if (apm_ini) {
+    apm_config_dump(apm_ini);
+  }
+  if (aec_ini) {
+    aec_config_dump(aec_ini);
+  }
 }
 
-int webrtc_apm_process_reverse_stream_f(webrtc_apm ptr, int num_channels,
-                                        int rate, float *const *data) {
-  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
+int webrtc_apm_process_reverse_stream_f(webrtc_apm ptr,
+                                        int num_channels,
+                                        int rate,
+                                        float* const* data) {
+  WebRtcApm* webrtc_apm_ptr = reinterpret_cast<WebRtcApm*>(ptr);
 
   webrtc_apm_ptr->stats.reverse_blocks_processed++;
 
   webrtc::StreamConfig config = webrtc::StreamConfig(rate, num_channels);
-  webrtc::AudioProcessing *apm = webrtc_apm_ptr->apm.get();
+  webrtc::AudioProcessing* apm = webrtc_apm_ptr->apm.get();
 
   return apm->ProcessReverseStream(data, config, config, data);
 }
 
-int webrtc_apm_process_stream_f(webrtc_apm ptr, int num_channels, int rate,
-                                float *const *data) {
-  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
+int webrtc_apm_process_stream_f(webrtc_apm ptr,
+                                int num_channels,
+                                int rate,
+                                float* const* data) {
+  WebRtcApm* webrtc_apm_ptr = reinterpret_cast<WebRtcApm*>(ptr);
 
   webrtc_apm_ptr->stats.forward_blocks_processed++;
 
   webrtc::StreamConfig iconfig = webrtc::StreamConfig(rate, num_channels);
   webrtc::StreamConfig oconfig = webrtc::StreamConfig(rate, num_channels);
-  webrtc::AudioProcessing *apm = webrtc_apm_ptr->apm.get();
+  webrtc::AudioProcessing* apm = webrtc_apm_ptr->apm.get();
   int ret = apm->ProcessStream(data, iconfig, oconfig, data);
   webrtc_apm_ptr->vad->Process(data, num_channels, rate);
   return ret;
 }
 
 int webrtc_apm_get_voice_detected(webrtc_apm ptr) {
-  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
+  WebRtcApm* webrtc_apm_ptr = reinterpret_cast<WebRtcApm*>(ptr);
   return webrtc_apm_ptr->vad->HasActivity();
 }
 
 void webrtc_apm_destroy(webrtc_apm ptr) {
-  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
+  WebRtcApm* webrtc_apm_ptr = reinterpret_cast<WebRtcApm*>(ptr);
   webrtc_apm_ptr->apm = nullptr;
   delete webrtc_apm_ptr;
 
   std::map<std::string, std::unique_ptr<SampleInfo>, rtc::AbslStringViewCmp>
       hist;
 
-  if (!metrics_lib_) return;
+  if (!metrics_lib_) {
+    return;
+  }
 
   webrtc::metrics::GetAndReset(&hist);
 
   for (auto it = hist.begin(); it != hist.end(); it++) {
-    SampleInfo *info = it->second.get();
+    SampleInfo* info = it->second.get();
     std::string name = info->name;
     name.insert(0, hist_name_prefix_);
     /* info->samples stores <value, # of events> */
     for (auto sample = info->samples.begin(); sample != info->samples.end();
          sample++) {
-      for (int i = 0; i < sample->second; i++)
+      for (int i = 0; i < sample->second; i++) {
         metrics_lib_->SendToUMA(name, sample->first, info->min, info->max,
                                 info->bucket_count);
+      }
     }
   }
 }
 
 int webrtc_apm_set_stream_delay(webrtc_apm ptr, int delay_ms) {
-  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
-  webrtc::AudioProcessing *apm = webrtc_apm_ptr->apm.get();
+  WebRtcApm* webrtc_apm_ptr = reinterpret_cast<WebRtcApm*>(ptr);
+  webrtc::AudioProcessing* apm = webrtc_apm_ptr->apm.get();
 
   return apm->set_stream_delay_ms(delay_ms);
 }
 
-int webrtc_apm_aec_dump(webrtc_apm ptr, void **wq_ptr, int start,
-                        FILE *handle) {
-  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
-  webrtc::AudioProcessing *apm = webrtc_apm_ptr->apm.get();
-  rtc::TaskQueue *work_queue;
+int webrtc_apm_aec_dump(webrtc_apm ptr,
+                        void** wq_ptr,
+                        int start,
+                        FILE* handle) {
+  WebRtcApm* webrtc_apm_ptr = reinterpret_cast<WebRtcApm*>(ptr);
+  webrtc::AudioProcessing* apm = webrtc_apm_ptr->apm.get();
+  rtc::TaskQueue* work_queue;
 
   if (start) {
     work_queue = new rtc::TaskQueue(
         webrtc::CreateDefaultTaskQueueFactory()->CreateTaskQueue(
             "aecdump-worker-queue", rtc::TaskQueue::Priority::LOW));
     auto aec_dump = webrtc::AecDumpFactory::Create(handle, -1, work_queue);
-    if (!aec_dump) return -ENOMEM;
+    if (!aec_dump) {
+      return -ENOMEM;
+    }
     apm->AttachAecDump(std::move(aec_dump));
-    *wq_ptr = reinterpret_cast<void *>(work_queue);
+    *wq_ptr = reinterpret_cast<void*>(work_queue);
   } else {
     apm->DetachAecDump();
-    work_queue = reinterpret_cast<rtc::TaskQueue *>(*wq_ptr);
+    work_queue = reinterpret_cast<rtc::TaskQueue*>(*wq_ptr);
     if (work_queue) {
       delete work_queue;
       work_queue = NULL;
@@ -367,7 +395,7 @@ int webrtc_apm_aec_dump(webrtc_apm ptr, void **wq_ptr, int start,
 }
 
 struct WebRtcApmActiveEffects webrtc_apm_get_active_effects(webrtc_apm ptr) {
-  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
+  WebRtcApm* webrtc_apm_ptr = reinterpret_cast<WebRtcApm*>(ptr);
   webrtc::AudioProcessing::Config config = webrtc_apm_ptr->apm->GetConfig();
   return {
       .echo_cancellation = config.echo_canceller.enabled,
@@ -377,6 +405,6 @@ struct WebRtcApmActiveEffects webrtc_apm_get_active_effects(webrtc_apm ptr) {
 }
 
 struct WebRtcApmStats webrtc_apm_get_stats(webrtc_apm ptr) {
-  WebRtcApm *webrtc_apm_ptr = reinterpret_cast<WebRtcApm *>(ptr);
+  WebRtcApm* webrtc_apm_ptr = reinterpret_cast<WebRtcApm*>(ptr);
   return webrtc_apm_ptr->stats;
 }
