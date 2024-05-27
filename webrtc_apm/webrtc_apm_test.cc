@@ -13,8 +13,9 @@
 namespace {
 
 TEST(WebRTCAPM, Smoke) {
+  const struct WebRtcApmConfig config = {.enforce_aec_on = true};
   webrtc_apm apm = webrtc_apm_create_with_enforced_effects(1, 48000, nullptr,
-                                                           nullptr, 1, 0, 0);
+                                                           nullptr, &config);
   EXPECT_TRUE(webrtc_apm_get_active_effects(apm).echo_cancellation);
   EXPECT_FALSE(webrtc_apm_get_active_effects(apm).noise_suppression);
   EXPECT_FALSE(webrtc_apm_get_active_effects(apm).voice_activity_detection);
@@ -33,8 +34,9 @@ TEST(WebRTCAPM, Smoke) {
 }
 
 TEST(WebRTCAPM, Stats) {
+  const struct WebRtcApmConfig config = {.enforce_aec_on = true};
   webrtc_apm apm = webrtc_apm_create_with_enforced_effects(1, 48000, nullptr,
-                                                           nullptr, 1, 0, 0);
+                                                           nullptr, &config);
 
   EXPECT_EQ(webrtc_apm_get_stats(apm).forward_blocks_processed, 0);
   EXPECT_EQ(webrtc_apm_get_stats(apm).reverse_blocks_processed, 0);
@@ -64,8 +66,10 @@ class VADTest : public ::testing::TestWithParam<VADParam> {
   void SetUp() override {
     aec_ini_ = dictionary_new(0);
     apm_ini_ = dictionary_new(0);
+    const struct WebRtcApmConfig config = {.enforce_aec_on =
+                                               GetParam().enable_aec};
     apm_ = webrtc_apm_create_with_enforced_effects(1, 48000, aec_ini_, apm_ini_,
-                                                   GetParam().enable_aec, 0, 0);
+                                                   &config);
     webrtc_apm_enable_vad(apm_, true);
     EXPECT_TRUE(webrtc_apm_get_active_effects(apm_).voice_activity_detection);
   }

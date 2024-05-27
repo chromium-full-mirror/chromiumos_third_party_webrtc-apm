@@ -131,14 +131,15 @@ void webrtc_apm_init_metrics(const char* prefix) {
   metrics_lib_ = std::make_unique<MetricsLibrary>();
 }
 
-static webrtc_apm webrtc_apm_create(unsigned int num_channels,
-                                    unsigned int frame_rate,
-                                    dictionary* aec_ini,
-                                    dictionary* apm_ini,
-                                    unsigned int enforce_aec_on,
-                                    unsigned int enforce_ns_on,
-                                    unsigned int enforce_agc_on,
-                                    WebRtcApmFeatures features) {
+static webrtc_apm webrtc_apm_create(
+    unsigned int num_channels,
+    unsigned int frame_rate,
+    dictionary* aec_ini,
+    dictionary* apm_ini,
+    const struct WebRtcApmConfig* webrtc_apm_config,
+    WebRtcApmFeatures features) {
+  RTC_CHECK(webrtc_apm_config);
+
   int err;
   webrtc::AudioProcessing* apm;
   webrtc::AudioProcessingBuilder apm_builder;
@@ -159,12 +160,12 @@ static webrtc_apm webrtc_apm_create(unsigned int num_channels,
   /* Set the rest of the all settings/tunings. */
   webrtc::AudioProcessing::Config config = apm->GetConfig();
   bool config_changed = false;
-  if (aec_ini || enforce_aec_on == 1) {
+  if (aec_ini || webrtc_apm_config->enforce_aec_on) {
     config.echo_canceller.enabled = true;
     /* Activate playout stereo processing by default. This can be
      * turned off in |apm_ini|.
      */
-    if (enforce_aec_on) {
+    if (webrtc_apm_config->enforce_aec_on) {
       config.pipeline.multi_channel_render = true;
     }
     config_changed = true;
@@ -175,12 +176,12 @@ static webrtc_apm webrtc_apm_create(unsigned int num_channels,
     config_changed = true;
   }
 
-  if (enforce_ns_on == 1) {
+  if (webrtc_apm_config->enforce_ns_on) {
     config.noise_suppression.enabled = true;
     config_changed = true;
   }
 
-  if (enforce_agc_on == 1) {
+  if (webrtc_apm_config->enforce_agc_on) {
     config.capture_level_adjustment.enabled = true;
     config.capture_level_adjustment.analog_mic_gain_emulation.enabled = true;
     configure_gain_controllers(/*agc1_config=*/&config.gain_controller1,
@@ -226,25 +227,20 @@ webrtc_apm webrtc_apm_create_with_enforced_effects(
     unsigned int frame_rate,
     dictionary* aec_ini,
     dictionary* apm_ini,
-    unsigned int enforce_aec_on,
-    unsigned int enforce_ns_on,
-    unsigned int enforce_agc_on) {
+    const struct WebRtcApmConfig* webrtc_apm_config) {
   return webrtc_apm_create(num_channels, frame_rate, aec_ini, apm_ini,
-                           enforce_aec_on, enforce_ns_on, enforce_agc_on,
-                           get_webrtc_apm_features());
+                           webrtc_apm_config, get_webrtc_apm_features());
 }
 
-webrtc_apm webrtc_apm_create_for_testing(unsigned int num_channels,
-                                         unsigned int frame_rate,
-                                         dictionary* aec_ini,
-                                         dictionary* apm_ini,
-                                         unsigned int enforce_aec_on,
-                                         unsigned int enforce_ns_on,
-                                         unsigned int enforce_agc_on,
-                                         WebRtcApmFeatures features) {
+webrtc_apm webrtc_apm_create_for_testing(
+    unsigned int num_channels,
+    unsigned int frame_rate,
+    dictionary* aec_ini,
+    dictionary* apm_ini,
+    const struct WebRtcApmConfig* webrtc_apm_config,
+    WebRtcApmFeatures features) {
   return webrtc_apm_create(num_channels, frame_rate, aec_ini, apm_ini,
-                           enforce_aec_on, enforce_ns_on, enforce_agc_on,
-                           features);
+                           webrtc_apm_config, features);
 }
 
 void webrtc_apm_enable_vad(webrtc_apm ptr, bool enable_vad) {

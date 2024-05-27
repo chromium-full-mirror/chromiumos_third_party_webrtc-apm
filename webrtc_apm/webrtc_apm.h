@@ -28,29 +28,31 @@ typedef void* webrtc_apm;
  */
 WEBRTC_APM_API void webrtc_apm_init_metrics(const char* prefix);
 
+struct WebRtcApmConfig {
+  // enforces the aec to be activated regardless of settings in apm.ini.
+  bool enforce_aec_on;
+  // enforces the ns to be activated regardless of settings in apm.ini.
+  bool enforce_ns_on;
+  // enforces the agc to be activated regardless of settings in apm.ini.
+  bool enforce_agc_on;
+};
+
 /* Creates a webrtc_apm for forward stream properties using optional enforcement
  * of the effects that are specified in the config files. In CRAS use case it
  * is usually created for input stream.
  * Args:
- *    num_channels   - Number of channels of the forward stream.
- *    frame_rate     - Frame rate used by forward stream.
- *    aec_config     - Pointer to aec config.
- *    apm_config     - Pointer to apm config.
- *    enforce_aec_on - When set to 1, enforces the aec to be activated
- *                     regardless of settings in apm.ini.
- *    enforce_ns_on  - When set to 1, enforces the ns to be activated
- *                     regardless of settings in apm.ini.
- *    enforce_agc_on - When set to 1, enforces the agc to be activated
- *                     regardless of settings in apm.ini.
+ *    num_channels - Number of channels of the forward stream.
+ *    frame_rate - Frame rate used by forward stream.
+ *    aec_ini - Pointer to parsed aec.ini.
+ *    apm_ini - Pointer to parsed apm.ini.
+ *    webrtc_apm_config - Pointer to a WebRtcApmConfig instance
  */
-WEBRTC_APM_API webrtc_apm
-webrtc_apm_create_with_enforced_effects(unsigned int num_channels,
-                                        unsigned int frame_rate,
-                                        dictionary* aec_ini,
-                                        dictionary* apm_ini,
-                                        unsigned int enforce_aec_on,
-                                        unsigned int enforce_ns_on,
-                                        unsigned int enforce_agc_on);
+WEBRTC_APM_API webrtc_apm webrtc_apm_create_with_enforced_effects(
+    unsigned int num_channels,
+    unsigned int frame_rate,
+    dictionary* aec_ini,
+    dictionary* apm_ini,
+    const struct WebRtcApmConfig* webrtc_apm_config);
 
 /* Collection of flags indicating which APM features are enabled. */
 typedef struct {
@@ -74,16 +76,11 @@ struct WebRtcApmActiveEffects {
  * Only used for testing.
  *
  * Args:
- *    num_channels   - Number of channels of the forward stream.
- *    frame_rate     - Frame rate used by forward stream.
- *    aec_config     - Pointer to aec config.
- *    apm_config     - Pointer to apm config.
- *    enforce_aec_on - When set to 1, enforces the aec to be activated
- *                     regardless of settings in apm.ini.
- *    enforce_ns_on  - When set to 1, enforces the ns to be activated
- *                     regardless of settings in apm.ini.
- *    enforce_agc_on - When set to 1, enforces the agc to be activated
- *                     regardless of settings in apm.ini.
+ *    num_channels - Number of channels of the forward stream.
+ *    frame_rate - Frame rate used by forward stream.
+ *    aec_ini - Pointer to parsed aec.ini.
+ *    apm_ini - Pointer to parsed apm.ini.
+ *    webrtc_apm_config - Pointer to a WebRtcApmConfig instance
  *    features       - Indicates which APM features are enabled, overrides the
  *                     values obtained
  */
@@ -92,9 +89,7 @@ webrtc_apm_create_for_testing(unsigned int num_channels,
                               unsigned int frame_rate,
                               dictionary* aec_ini,
                               dictionary* apm_ini,
-                              unsigned int enforce_aec_on,
-                              unsigned int enforce_ns_on,
-                              unsigned int enforce_agc_on,
+                              const struct WebRtcApmConfig* webrtc_apm_config,
                               WebRtcApmFeatures features);
 
 /* Enables/disables effects in a webrtc_apm.
