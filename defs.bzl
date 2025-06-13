@@ -12,6 +12,7 @@ COPTS = [
     # Disable warnings.
     "-Wno-unknown-warning-option",
     "-Wno-deprecated-declarations",
+    "-Wno-thread-safety-reference-return",  # system_wrappers/source/metrics.cc:68:44: error: returning variable 'info_' by reference requires holding mutex 'mutex_'
     "-Wno-return-type",  # gcc
     "-Wno-nonnull-compare",  # gcc
     "-Wno-address",  # gcc
