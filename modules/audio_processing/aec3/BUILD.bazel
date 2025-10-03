@@ -20,7 +20,7 @@ cc_library(
         "//api:array_view",
         "//modules/audio_processing:apm_logging",
         "//rtc_base/system:arch",
-        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 
@@ -160,14 +160,18 @@ cc_library(
         ":render_buffer",
         ":vector_math",
         "//api:array_view",
+        "//api:field_trials_view",
         "//api/audio:aec3_config",
         "//api/audio:echo_control",
+        "//api/environment",
         "//common_audio:common_audio_c",
         "//modules/audio_processing:apm_logging",
         "//modules/audio_processing:audio_buffer",
         "//modules/audio_processing:high_pass_filter",
         "//modules/audio_processing/utility:cascaded_biquad_filter",
         "//rtc_base:checks",
+        "//rtc_base:cpu_info",
+        "//rtc_base:gtest_prod",
         "//rtc_base:logging",
         "//rtc_base:macromagic",
         "//rtc_base:race_checker",
@@ -175,11 +179,8 @@ cc_library(
         "//rtc_base:swap_queue",
         "//rtc_base/experiments:field_trial_parser",
         "//rtc_base/system:arch",
-        "//system_wrappers",
-        "//system_wrappers:field_trial",
         "//system_wrappers:metrics",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/strings:string_view",
     ] + select({
         "@platforms//cpu:x86_64": [":aec3_avx2"],
         "//conditions:default": [],
@@ -200,8 +201,10 @@ cc_library(
     deps = [
         ":adaptive_fir_filter",
         ":adaptive_fir_filter_erl",
+        ":aec3_common",
         ":fft_data",
         ":matched_filter",
+        ":render_buffer",
         ":vector_math",
         "//api:array_view",
         "//rtc_base:checks",
@@ -235,6 +238,7 @@ cc_library(
     deps = [
         ":aec3_common",
         "//api:array_view",
+        "//rtc_base:checks",
         "//rtc_base/system:arch",
     ],
 )
@@ -248,7 +252,6 @@ cc_library(
         "//api:array_view",
         "//rtc_base:gtest_prod",
         "//rtc_base/system:arch",
-        "@com_google_absl//absl/types:optional",
     ],
 )
 

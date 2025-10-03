@@ -22,12 +22,12 @@ cc_library(
     ],
     copts = COPTS,
     deps = [
+        "//api:array_view",
         "//api/audio:audio_frame_api",
         "//common_audio",
         "//rtc_base:checks",
         "//rtc_base:logging",
         "//rtc_base:safe_conversions",
-        "//system_wrappers:field_trial",
         "@com_google_absl//absl/base:core_headers",
     ],
 )

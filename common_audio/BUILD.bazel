@@ -46,18 +46,19 @@ cc_library(
         ":common_audio_c",
         ":sinc_resampler",
         "//api:array_view",
+        "//api/audio:audio_frame_api",
+        "//api/units:timestamp",
         "//common_audio/third_party/ooura:fft_size_256",
         "//rtc_base:checks",
+        "//rtc_base:cpu_info",
         "//rtc_base:gtest_prod",
         "//rtc_base:logging",
         "//rtc_base:safe_conversions",
         "//rtc_base:sanitizer",
-        "//rtc_base:timeutils",
         "//rtc_base/memory:aligned_malloc",
         "//rtc_base/system:arch",
         "//rtc_base/system:file_wrapper",
-        "//system_wrappers",
-        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/strings:string_view",
     ] + select({
         "//:neon_build": [":common_audio_neon"],
         "//conditions:default": [],
@@ -105,7 +106,6 @@ cc_library(
         "signal_processing/filter_ma_fast_q12.c",
         "signal_processing/get_hanning_window.c",
         "signal_processing/get_scaling_square.c",
-        "signal_processing/ilbc_specific_functions.c",
         "signal_processing/levinson_durbin.c",
         "signal_processing/lpc_to_refl_coef.c",
         "signal_processing/min_max_operations.c",
@@ -122,6 +122,7 @@ cc_library(
         "signal_processing/spl_sqrt.c",
         "signal_processing/splitting_filter.c",
         "signal_processing/sqrt_of_one_minus_x_squared.c",
+        "signal_processing/vector_operations.c",
         "signal_processing/vector_scaling_operations.c",
         "//common_audio/vad:vad_core.c",
         "//common_audio/vad:vad_filterbank.c",
@@ -153,7 +154,6 @@ cc_library(
         "//rtc_base:compile_assert_c",
         "//rtc_base:sanitizer",
         "//rtc_base/system:arch",
-        "//system_wrappers",
     ],
 )
 
@@ -167,10 +167,7 @@ cc_library(
     srcs = ["signal_processing/dot_product_with_scale.cc"],
     hdrs = ["signal_processing/dot_product_with_scale.h"],
     copts = COPTS,
-    deps = [
-        "//rtc_base:safe_conversions",
-        "//system_wrappers",
-    ],
+    deps = ["//rtc_base:safe_conversions"],
 )
 
 cc_library(
@@ -243,8 +240,8 @@ cc_library(
     deps = [
         ":fir_filter",
         "//rtc_base:checks",
+        "//rtc_base:cpu_info",
         "//rtc_base/system:arch",
-        "//system_wrappers",
     ] + select({
         "//:neon_build": [":common_audio_neon"],
         "//conditions:default": [],
@@ -262,9 +259,9 @@ cc_library(
     hdrs = ["resampler/sinc_resampler.h"],
     copts = COPTS,
     deps = [
+        "//rtc_base:cpu_info",
         "//rtc_base:gtest_prod",
         "//rtc_base/memory:aligned_malloc",
         "//rtc_base/system:arch",
-        "//system_wrappers",
     ],
 )

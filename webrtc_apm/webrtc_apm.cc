@@ -15,12 +15,15 @@
 #include <errno.h>
 #include <metrics/metrics_library.h>
 
+#include "api/audio/audio_processing.h"
+#include "api/audio/builtin_audio_processing_builder.h"
 #include "api/audio/echo_canceller3_factory.h"
+#include "api/environment/environment_factory.h"
 #include "api/task_queue/default_task_queue_factory.h"
+#include "api/task_queue/task_queue_base.h"
+#include "api/task_queue/task_queue_factory.h"
 #include "modules/audio_processing/aec_dump/aec_dump_factory.h"
 #include "modules/audio_processing/include/aec_dump.h"
-#include "modules/audio_processing/include/audio_processing.h"
-#include "rtc_base/task_queue.h"
 #include "system_wrappers/include/metrics.h"
 #include "webrtc_apm/cras_config/aec_config.h"
 #include "webrtc_apm/cras_config/apm_config.h"
@@ -33,7 +36,7 @@ static std::string hist_name_prefix_;
 static std::unique_ptr<MetricsLibraryInterface> metrics_lib_;
 
 struct WebRtcApm {
-  rtc::scoped_refptr<webrtc::AudioProcessing> apm;
+  webrtc::scoped_refptr<webrtc::AudioProcessing> apm;
   std::unique_ptr<VoiceActivityDetector> vad;
   WebRtcApmStats stats = {};
 };
@@ -142,7 +145,7 @@ static webrtc_apm webrtc_apm_create(
 
   int err;
   webrtc::AudioProcessing* apm;
-  webrtc::AudioProcessingBuilder apm_builder;
+  webrtc::BuiltinAudioProcessingBuilder apm_builder;
   webrtc::EchoCanceller3Config aec3_config;
 
   /* Set the AEC-tunings. */
@@ -163,7 +166,7 @@ static webrtc_apm webrtc_apm_create(
   }
 
   WebRtcApm* webrtc_apm_state = new WebRtcApm();
-  webrtc_apm_state->apm = apm_builder.Create();
+  webrtc_apm_state->apm = apm_builder.Build(webrtc::CreateEnvironment());
   apm = webrtc_apm_state->apm.get();
 
   /* Set the rest of the all settings/tunings. */
@@ -339,7 +342,7 @@ void webrtc_apm_destroy(webrtc_apm ptr) {
   webrtc_apm_ptr->apm = nullptr;
   delete webrtc_apm_ptr;
 
-  std::map<std::string, std::unique_ptr<SampleInfo>, rtc::AbslStringViewCmp>
+  std::map<std::string, std::unique_ptr<SampleInfo>, webrtc::AbslStringViewCmp>
       hist;
 
   if (!metrics_lib_) {
@@ -376,24 +379,30 @@ int webrtc_apm_aec_dump(webrtc_apm ptr,
                         FILE* handle) {
   WebRtcApm* webrtc_apm_ptr = reinterpret_cast<WebRtcApm*>(ptr);
   webrtc::AudioProcessing* apm = webrtc_apm_ptr->apm.get();
-  rtc::TaskQueue* work_queue;
+  std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>* work_queue =
+      nullptr;
 
   if (start) {
-    work_queue = new rtc::TaskQueue(
-        webrtc::CreateDefaultTaskQueueFactory()->CreateTaskQueue(
-            "aecdump-worker-queue", rtc::TaskQueue::Priority::LOW));
-    auto aec_dump = webrtc::AecDumpFactory::Create(handle, -1, work_queue);
+    work_queue =
+        new std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>(
+            webrtc::CreateDefaultTaskQueueFactory()->CreateTaskQueue(
+                "aecdump-worker-queue",
+                webrtc::TaskQueueFactory::Priority::LOW));
+    auto aec_dump =
+        webrtc::AecDumpFactory::Create(handle, -1, work_queue->get());
     if (!aec_dump) {
       return -ENOMEM;
     }
     apm->AttachAecDump(std::move(aec_dump));
-    *wq_ptr = reinterpret_cast<void*>(work_queue);
+    *wq_ptr = reinterpret_cast<void*>(std::move(work_queue));
   } else {
     apm->DetachAecDump();
-    work_queue = reinterpret_cast<rtc::TaskQueue*>(*wq_ptr);
-    if (work_queue) {
+    work_queue = reinterpret_cast<
+        std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>*>(
+        *wq_ptr);
+    if (work_queue != nullptr) {
+      work_queue->reset();
       delete work_queue;
-      work_queue = NULL;
     }
   }
   return 0;

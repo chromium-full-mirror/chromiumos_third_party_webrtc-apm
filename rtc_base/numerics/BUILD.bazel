@@ -18,6 +18,7 @@ exports_files([
     "moving_average.h",
     "moving_percentile_filter.h",
     "percentile_filter.h",
+    "rational.h",
     "running_statistics.h",
     "safe_compare.h",
     "safe_conversions.h",

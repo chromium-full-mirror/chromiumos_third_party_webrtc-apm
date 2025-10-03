@@ -9,29 +9,15 @@ package(
 )
 
 cc_library(
-    name = "denormal_disabler",
-    srcs = ["source/denormal_disabler.cc"],
-    hdrs = ["include/denormal_disabler.h"],
-    copts = COPTS,
-    deps = [
-        "//rtc_base:checks",
-        "//rtc_base/system:arch",
-    ],
-)
-
-cc_library(
     name = "field_trial",
     srcs = ["source/field_trial.cc"],
     hdrs = ["include/field_trial.h"],
     copts = COPTS,
     deps = [
-        "//experiments:registered_field_trials",
         "//rtc_base:checks",
         "//rtc_base:logging",
         "//rtc_base:stringutils",
-        "//rtc_base/containers:flat_set",
-        "@com_google_absl//absl/algorithm:container",
-        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 
@@ -41,46 +27,34 @@ cc_library(
     hdrs = ["include/metrics.h"],
     copts = COPTS,
     deps = [
+        "//api/units:time_delta",
         "//rtc_base:checks",
         "//rtc_base:macromagic",
         "//rtc_base:stringutils",
         "//rtc_base/synchronization:mutex",
-        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 
 cc_library(
     name = "system_wrappers",
-    srcs = [
-        "source/clock.cc",
-        "source/cpu_features.cc",
-        "source/cpu_features_linux.cc",
-        "source/cpu_info.cc",
-        "source/rtp_to_ntp_estimator.cc",
-        "source/sleep.cc",
-    ],
+    srcs = ["source/clock.cc"],
     hdrs = [
         "include/clock.h",
-        "include/cpu_features_wrapper.h",
-        "include/cpu_info.h",
         "include/ntp_time.h",
-        "include/rtp_to_ntp_estimator.h",
-        "include/sleep.h",
     ],
     copts = COPTS,
     deps = [
-        ":field_trial",
         "//api:array_view",
+        "//api/units:time_delta",
         "//api/units:timestamp",
-        "//modules:module_api_public",
         "//rtc_base:checks",
+        "//rtc_base:divide_round",
         "//rtc_base:logging",
         "//rtc_base:rtc_numerics",
         "//rtc_base:safe_conversions",
         "//rtc_base:timeutils",
         "//rtc_base/synchronization:mutex",
-        "//rtc_base/system:arch",
         "//rtc_base/system:rtc_export",
-        "@com_google_absl//absl/types:optional",
     ],
 )

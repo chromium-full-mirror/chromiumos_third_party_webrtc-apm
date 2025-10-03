@@ -7,6 +7,7 @@ package(
 )
 
 exports_files([
+    "str_join.h",
     "string_builder.cc",
     "string_builder.h",
     "string_format.cc",

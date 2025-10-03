@@ -11,7 +11,8 @@ extern "C" {
 #include <iniparser.h>
 }
 
-#include "modules/audio_processing/include/audio_processing.h"
+#include "api/audio/audio_processing.h"
+#include "api/audio/echo_canceller3_config.h"
 
 /* Keys for AudioProcessing::Pipeline */
 #define PIPELINE_MAXIMUM_INTERNAL_PROCESSING_RATE \

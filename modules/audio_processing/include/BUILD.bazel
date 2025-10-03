@@ -12,8 +12,4 @@ exports_files([
     "audio_frame_proxies.cc",
     "audio_frame_proxies.h",
     "audio_frame_view.h",
-    "audio_processing.cc",
-    "audio_processing.h",
-    "audio_processing_statistics.cc",
-    "audio_processing_statistics.h",
 ])

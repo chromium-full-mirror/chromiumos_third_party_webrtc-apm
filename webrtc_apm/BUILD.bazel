@@ -20,6 +20,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//api/audio:aec3_factory",
+        "//api/audio:builtin_audio_processing_builder",
+        "//api/environment:environment_factory",
         "//api/task_queue:default_task_queue_factory",
         "//modules/audio_processing",
         "//repositories:metrics_library",

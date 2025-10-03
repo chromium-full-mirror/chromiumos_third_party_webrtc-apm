@@ -18,12 +18,12 @@ cc_binary(
     ],
     deps = [
         "//api:function_view",
+        "//api/audio:audio_frame_api",
         "//common_audio",
         "//modules/audio_processing",
         "//modules/audio_processing:audioproc_debug_proto",
         "//modules/audio_processing:audioproc_protobuf_utils",
         "//rtc_base:checks",
-        "//rtc_base:ignore_wundef",
         "//rtc_base:macromagic",
         "//rtc_base:protobuf_utils",
         "//rtc_base:stringutils",

@@ -20,6 +20,7 @@ cc_library(
         "//api:array_view",
         "//rtc_base:checks",
         "//rtc_base:stringutils",
+        "//rtc_base/system:rtc_export",
         "//rtc_base/units:unit_base",
     ],
 )
@@ -33,6 +34,7 @@ cc_library(
         "//api:array_view",
         "//rtc_base:checks",
         "//rtc_base:stringutils",
+        "//rtc_base/system:rtc_export",
         "//rtc_base/units:unit_base",
     ],
 )
@@ -47,6 +49,7 @@ cc_library(
         "//api:array_view",
         "//rtc_base:checks",
         "//rtc_base:stringutils",
+        "//rtc_base/system:rtc_export",
         "//rtc_base/units:unit_base",
     ],
 )
@@ -60,6 +63,7 @@ cc_library(
         "//api:array_view",
         "//rtc_base:checks",
         "//rtc_base:stringutils",
+        "//rtc_base/system:rtc_export",
         "//rtc_base/units:unit_base",
     ],
 )
@@ -74,6 +78,7 @@ cc_library(
         "//api:array_view",
         "//rtc_base:checks",
         "//rtc_base:stringutils",
+        "//rtc_base/system:rtc_export",
         "//rtc_base/units:unit_base",
     ],
 )

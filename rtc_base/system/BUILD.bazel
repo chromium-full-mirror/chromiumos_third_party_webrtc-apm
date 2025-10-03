@@ -23,7 +23,7 @@ cc_library(
         "//rtc_base:checks",
         "//rtc_base:criticalsection",
         "//rtc_base:safe_conversions",
-        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 

@@ -79,7 +79,7 @@ cc_library(
         "//rtc_base:checks",
         "//rtc_base:safe_conversions",
         "//third_party/rnnoise:rnn_vad",
-        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
     ] + select({
         "@platforms//cpu:x86_64": [":vector_math_avx2"],
         "//conditions:default": [],

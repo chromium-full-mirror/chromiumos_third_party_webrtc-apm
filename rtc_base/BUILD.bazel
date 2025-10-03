@@ -15,11 +15,12 @@ cc_library(
     copts = COPTS,
     deps = [
         ":safe_compare",
+        ":type_traits",
         "//api:scoped_refptr",
         "//rtc_base/system:inline",
         "//rtc_base/system:rtc_export",
-        "@com_google_absl//absl/meta:type_traits",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 
@@ -27,6 +28,19 @@ cc_library(
     name = "compile_assert_c",
     hdrs = ["compile_assert_c.h"],
     copts = COPTS,
+)
+
+cc_library(
+    name = "cpu_info",
+    srcs = ["cpu_info.cc"],
+    hdrs = ["cpu_info.h"],
+    copts = COPTS,
+    deps = [
+        ":checks",
+        ":logging",
+        "//rtc_base/system:arch",
+        "//rtc_base/system:unused",
+    ],
 )
 
 cc_library(
@@ -44,6 +58,17 @@ cc_library(
 )
 
 cc_library(
+    name = "denormal_disabler",
+    srcs = ["denormal_disabler.cc"],
+    hdrs = ["denormal_disabler.h"],
+    copts = COPTS,
+    deps = [
+        ":checks",
+        "//rtc_base/system:arch",
+    ],
+)
+
+cc_library(
     name = "divide_round",
     hdrs = ["//rtc_base/numerics:divide_round.h"],
     copts = COPTS,
@@ -55,9 +80,13 @@ cc_library(
 
 cc_library(
     name = "event_tracer",
-    srcs = ["event_tracer.cc"],
+    srcs = [
+        "event_tracer.cc",
+        "trace_categories.cc",
+    ],
     hdrs = [
         "event_tracer.h",
+        "trace_categories.h",
         "trace_event.h",
     ],
     copts = COPTS,
@@ -70,21 +99,16 @@ cc_library(
         ":rtc_event",
         ":timeutils",
         "//api:sequence_checker",
+        "//api/units:time_delta",
         "//rtc_base/synchronization:mutex",
         "//rtc_base/system:rtc_export",
-        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 
 cc_library(
     name = "gtest_prod",
     hdrs = ["gtest_prod_util.h"],
-    copts = COPTS,
-)
-
-cc_library(
-    name = "ignore_wundef",
-    hdrs = ["ignore_wundef.h"],
     copts = COPTS,
 )
 
@@ -99,24 +123,20 @@ cc_library(
         ":platform_thread_types",
         ":stringutils",
         ":timeutils",
+        ":type_traits",
         "//api/units:timestamp",
         "//rtc_base/synchronization:mutex",
         "//rtc_base/system:inline",
         "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/meta:type_traits",
         "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 
 cc_library(
     name = "macromagic",
-    hdrs = [
-        "arraysize.h",
-        "thread_annotations.h",
-    ],
+    hdrs = ["thread_annotations.h"],
     copts = COPTS,
-    deps = ["//rtc_base/system:arch"],
 )
 
 cc_library(
@@ -133,14 +153,11 @@ cc_library(
     copts = COPTS,
     deps = [
         ":checks",
-        ":macromagic",
         ":platform_thread_types",
         ":rtc_event",
         ":timeutils",
         "//api:sequence_checker",
-        "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 
@@ -149,10 +166,7 @@ cc_library(
     srcs = ["platform_thread_types.cc"],
     hdrs = ["platform_thread_types.h"],
     copts = COPTS,
-    deps = [
-        ":checks",
-        ":macromagic",
-    ],
+    deps = [":checks"],
 )
 
 cc_library(
@@ -182,7 +196,7 @@ cc_library(
     ],
     copts = COPTS,
     deps = [
-        ":macromagic",
+        "//api:ref_count",
         "//api:scoped_refptr",
     ],
 )
@@ -194,11 +208,9 @@ cc_library(
     copts = COPTS,
     deps = [
         ":checks",
-        ":timeutils",
         "//api/units:time_delta",
         "//rtc_base/synchronization:yield_policy",
         "//rtc_base/system:warn_current_thread_is_deadlocked",
-        "@com_google_absl//absl/types:optional",
     ],
 )
 
@@ -216,6 +228,7 @@ cc_library(
         "//rtc_base/numerics:moving_average.h",
         "//rtc_base/numerics:moving_percentile_filter.h",
         "//rtc_base/numerics:percentile_filter.h",
+        "//rtc_base/numerics:rational.h",
         "//rtc_base/numerics:running_statistics.h",
         "//rtc_base/numerics:sequence_number_unwrapper.h",
         "//rtc_base/numerics:sequence_number_util.h",
@@ -224,44 +237,29 @@ cc_library(
     deps = [
         ":checks",
         ":mod_ops",
-        "@com_google_absl//absl/types:optional",
     ],
 )
 
 cc_library(
-    name = "rtc_task_queue",
-    srcs = ["task_queue.cc"],
-    hdrs = ["task_queue.h"],
-    copts = COPTS,
-    deps = [
-        ":macromagic",
-        "//api/task_queue",
-        "//rtc_base/system:rtc_export",
-        "@com_google_absl//absl/functional:any_invocable",
-        "@com_google_absl//absl/memory",
-    ],
-)
-
-cc_library(
-    name = "rtc_task_queue_libevent",
-    srcs = ["task_queue_libevent.cc"],
-    hdrs = ["task_queue_libevent.h"],
+    name = "rtc_task_queue_stdlib",
+    srcs = ["task_queue_stdlib.cc"],
+    hdrs = ["task_queue_stdlib.h"],
     copts = COPTS,
     deps = [
         ":checks",
+        ":divide_round",
         ":logging",
         ":macromagic",
         ":platform_thread",
-        ":platform_thread_types",
+        ":rtc_event",
         ":safe_conversions",
         ":timeutils",
+        "//api:location",
         "//api/task_queue",
         "//api/units:time_delta",
         "//rtc_base/synchronization:mutex",
-        "@com_google_absl//absl/container:inlined_vector",
         "@com_google_absl//absl/functional:any_invocable",
-        "@com_google_absl//absl/strings",
-        "@pkg_config//libevent",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 
@@ -297,7 +295,6 @@ cc_library(
     name = "sanitizer",
     hdrs = ["sanitizer.h"],
     copts = COPTS,
-    deps = ["@com_google_absl//absl/meta:type_traits"],
 )
 
 cc_library(
@@ -313,17 +310,18 @@ cc_library(
         "string_encode.h",
         "string_to_number.h",
         "string_utils.h",
+        "//rtc_base/strings:str_join.h",
         "//rtc_base/strings:string_builder.h",
         "//rtc_base/strings:string_format.h",
     ],
     copts = COPTS,
     deps = [
         ":checks",
-        ":macromagic",
         ":safe_minmax",
         "//api:array_view",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 

@@ -10,13 +10,13 @@ package(
 
 cc_library(
     name = "default_task_queue_factory",
-    srcs = ["default_task_queue_factory_libevent.cc"],
+    srcs = ["default_task_queue_factory_stdlib.cc"],
     hdrs = ["default_task_queue_factory.h"],
     copts = COPTS,
     deps = [
         ":task_queue",
         "//api:field_trials_view",
-        "//rtc_base:rtc_task_queue_libevent",
+        "//rtc_base:rtc_task_queue_stdlib",
         "//rtc_base/memory:always_valid_pointer",
     ],
 )
@@ -38,6 +38,6 @@ cc_library(
         "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/functional:any_invocable",
-        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )

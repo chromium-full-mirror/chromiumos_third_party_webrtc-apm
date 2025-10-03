@@ -24,8 +24,8 @@ cc_library(
     ],
     copts = COPTS,
     deps = [
+        "//rtc_base:cpu_info",
         "//rtc_base/system:arch",
-        "//system_wrappers",
     ] + select({
         "//:neon_build": ["//common_audio"],
         "//conditions:default": [],

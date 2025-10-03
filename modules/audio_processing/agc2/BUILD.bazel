@@ -16,10 +16,10 @@ cc_library(
     deps = [
         ":common",
         ":gain_applier",
+        "//api/audio:audio_frame_api",
+        "//api/audio:audio_processing",
         "//common_audio",
-        "//modules/audio_processing:api",
         "//modules/audio_processing:apm_logging",
-        "//modules/audio_processing:audio_frame_view",
         "//rtc_base:checks",
         "//rtc_base:logging",
         "//rtc_base:safe_minmax",
@@ -34,7 +34,7 @@ cc_library(
     copts = COPTS,
     deps = [
         "//api:array_view",
-        "//rtc_base:macromagic",
+        "//rtc_base:checks",
     ],
 )
 
@@ -51,13 +51,12 @@ cc_library(
     copts = COPTS,
     deps = [
         ":gain_map",
+        "//api/audio:audio_processing",
         "//common_audio",
-        "//modules/audio_processing:api",
         "//modules/audio_processing:audio_frame_view",
         "//rtc_base:checks",
         "//rtc_base:logging",
         "//rtc_base:safe_minmax",
-        "@com_google_absl//absl/types:optional",
     ],
 )
 
@@ -73,9 +72,9 @@ cc_library(
     hdrs = ["cpu_features.h"],
     copts = COPTS,
     deps = [
+        "//rtc_base:cpu_info",
         "//rtc_base:stringutils",
         "//rtc_base/system:arch",
-        "//system_wrappers",
     ],
 )
 
@@ -95,6 +94,7 @@ cc_library(
     deps = [
         ":common",
         "//api:array_view",
+        "//api/audio:audio_frame_api",
         "//common_audio",
         "//modules/audio_processing:apm_logging",
         "//modules/audio_processing:audio_frame_view",
@@ -104,7 +104,7 @@ cc_library(
         "//rtc_base:safe_minmax",
         "//rtc_base:stringutils",
         "//system_wrappers:metrics",
-        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 
@@ -115,8 +115,9 @@ cc_library(
     copts = COPTS,
     deps = [
         ":common",
-        "//api:array_view",
+        "//api/audio:audio_frame_api",
         "//modules/audio_processing:audio_frame_view",
+        "//rtc_base:checks",
         "//rtc_base:safe_minmax",
     ],
 )
@@ -143,16 +144,14 @@ cc_library(
         ":gain_map",
         ":input_volume_stats_reporter",
         "//api:array_view",
-        "//modules/audio_processing:api",
+        "//api/audio:audio_processing",
         "//modules/audio_processing:audio_buffer",
         "//modules/audio_processing:audio_frame_view",
         "//rtc_base:checks",
         "//rtc_base:gtest_prod",
         "//rtc_base:logging",
         "//rtc_base:safe_minmax",
-        "//system_wrappers:field_trial",
         "//system_wrappers:metrics",
-        "@com_google_absl//absl/types:optional",
     ],
 )
 
@@ -162,13 +161,13 @@ cc_library(
     hdrs = ["input_volume_stats_reporter.h"],
     copts = COPTS,
     deps = [
+        "//rtc_base:checks",
         "//rtc_base:gtest_prod",
         "//rtc_base:logging",
         "//rtc_base:safe_minmax",
         "//rtc_base:stringutils",
         "//system_wrappers:metrics",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 
@@ -179,9 +178,8 @@ cc_library(
     copts = COPTS,
     deps = [
         ":biquad_filter",
-        "//api:array_view",
+        "//api/audio:audio_frame_api",
         "//modules/audio_processing:apm_logging",
-        "//modules/audio_processing:audio_frame_view",
         "//rtc_base:checks",
         "//system_wrappers",
     ],
@@ -204,7 +202,6 @@ cc_library(
         "//rtc_base:checks",
         "//rtc_base:safe_compare",
         "//rtc_base:safe_minmax",
-        "@com_google_absl//absl/types:optional",
     ],
 )
 
@@ -216,7 +213,7 @@ cc_library(
     deps = [
         ":common",
         "//api:array_view",
-        "//modules/audio_processing:api",
+        "//api/audio:audio_processing",
         "//modules/audio_processing:apm_logging",
         "//rtc_base:checks",
         "//rtc_base:logging",
@@ -232,9 +229,8 @@ cc_library(
     deps = [
         ":common",
         ":cpu_features",
-        "//api:array_view",
+        "//api/audio:audio_frame_api",
         "//common_audio",
-        "//modules/audio_processing:audio_frame_view",
         "//modules/audio_processing/agc2/rnn_vad",
         "//modules/audio_processing/agc2/rnn_vad:rnn_vad_common",
         "//rtc_base:checks",

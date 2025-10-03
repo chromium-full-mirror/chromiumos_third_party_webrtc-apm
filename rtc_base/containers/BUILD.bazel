@@ -13,7 +13,6 @@ cc_library(
     srcs = ["flat_tree.cc"],
     hdrs = [
         "flat_tree.h",
-        "identity.h",
         "invoke.h",
         "move_only_int.h",
     ],
