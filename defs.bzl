@@ -19,6 +19,10 @@ COPTS = [
 ] + select({
     "//:neon_build": ["-DWEBRTC_HAS_NEON"],
     "//conditions:default": [],
+}) + select({
+    "//:aarch32_build": ["-DWEBRTC_ARCH_ARM"],
+    "//:aarch64_build": ["-DWEBRTC_ARCH_ARM64"],
+    "//conditions:default": [],
 })
 
 AVX2_COPTS = ["-mavx2", "-mfma"]

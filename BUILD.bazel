@@ -26,6 +26,20 @@ config_setting(
     visibility = ["//:__subpackages__"],
 )
 
+config_setting(
+    name = "aarch32_build",
+    constraint_values = [
+        "@platforms//cpu:aarch32",
+    ],
+)
+
+config_setting(
+    name = "aarch64_build",
+    constraint_values = [
+        "@platforms//cpu:aarch64",
+    ],
+)
+
 bool_flag(
     name = "chromiumos",
     build_setting_default = False,
