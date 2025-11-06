@@ -19,8 +19,9 @@ extern "C" {
 
 #define WEBRTC_APM_API __attribute__((visibility("default")))
 
-/* Pointer to a webrtc::AudioProcessing instance. */
-typedef void* webrtc_apm;
+struct WebRtcApm;
+
+typedef struct WebRtcApm* webrtc_apm;
 
 /* Enables UMA metrics in webrtc APM.
  * Args:
