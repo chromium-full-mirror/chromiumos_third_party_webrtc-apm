@@ -39,6 +39,8 @@ struct WebRtcApm {
   webrtc::scoped_refptr<webrtc::AudioProcessing> apm;
   std::unique_ptr<VoiceActivityDetector> vad;
   WebRtcApmStats stats = {};
+  std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
+      aec_dump_work_queue;
 };
 
 #if !defined(HAVE_FEATURED) || defined(BYPASS_FEATURE_CHECK)
@@ -364,36 +366,22 @@ int webrtc_apm_set_stream_delay(webrtc_apm webrtc_apm_ptr, int delay_ms) {
   return apm->set_stream_delay_ms(delay_ms);
 }
 
-int webrtc_apm_aec_dump(webrtc_apm webrtc_apm_ptr,
-                        void** wq_ptr,
-                        int start,
-                        FILE* handle) {
+int webrtc_apm_aec_dump(webrtc_apm webrtc_apm_ptr, int start, FILE* handle) {
   webrtc::AudioProcessing* apm = webrtc_apm_ptr->apm.get();
-  std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>* work_queue =
-      nullptr;
 
   if (start) {
-    work_queue =
-        new std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>(
-            webrtc::CreateDefaultTaskQueueFactory()->CreateTaskQueue(
-                "aecdump-worker-queue",
-                webrtc::TaskQueueFactory::Priority::LOW));
-    auto aec_dump =
-        webrtc::AecDumpFactory::Create(handle, -1, work_queue->get());
+    webrtc_apm_ptr->aec_dump_work_queue =
+        webrtc::CreateDefaultTaskQueueFactory()->CreateTaskQueue(
+            "aecdump-worker-queue", webrtc::TaskQueueFactory::Priority::LOW);
+    auto aec_dump = webrtc::AecDumpFactory::Create(
+        handle, -1, webrtc_apm_ptr->aec_dump_work_queue.get());
     if (!aec_dump) {
       return -ENOMEM;
     }
     apm->AttachAecDump(std::move(aec_dump));
-    *wq_ptr = reinterpret_cast<void*>(std::move(work_queue));
   } else {
     apm->DetachAecDump();
-    work_queue = reinterpret_cast<
-        std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>*>(
-        *wq_ptr);
-    if (work_queue != nullptr) {
-      work_queue->reset();
-      delete work_queue;
-    }
+    webrtc_apm_ptr->aec_dump_work_queue.reset();
   }
   return 0;
 }

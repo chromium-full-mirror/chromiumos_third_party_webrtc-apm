@@ -162,15 +162,10 @@ WEBRTC_APM_API int webrtc_apm_set_stream_delay(webrtc_apm ptr, int delay_ms);
 /* Dump aec debug info to a file.
  * Args:
  *    ptr - Pointer to the webrtc_apm instance.
- *    work_queue - Pointer holding or to hold the allocated task queue for
- *        aec dump. Will be deleted when aec dump stops.
  *    start - True to start dumping, false to stop.
  *    handle - Pointer of the file storing aec dump.
  */
-WEBRTC_APM_API int webrtc_apm_aec_dump(webrtc_apm ptr,
-                                       void** work_queue,
-                                       int start,
-                                       FILE* handle);
+WEBRTC_APM_API int webrtc_apm_aec_dump(webrtc_apm ptr, int start, FILE* handle);
 
 /* Return the active effects on the APM. */
 WEBRTC_APM_API struct WebRtcApmActiveEffects webrtc_apm_get_active_effects(
