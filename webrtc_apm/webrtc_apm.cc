@@ -377,12 +377,10 @@ int webrtc_apm_aec_dump(webrtc_apm webrtc_apm_ptr, int start, FILE* handle) {
     webrtc_apm_ptr->aec_dump_work_queue =
         webrtc::CreateDefaultTaskQueueFactory()->CreateTaskQueue(
             "aecdump-worker-queue", webrtc::TaskQueueFactory::Priority::LOW);
-    auto aec_dump = webrtc::AecDumpFactory::Create(
-        handle, -1, webrtc_apm_ptr->aec_dump_work_queue.get());
-    if (!aec_dump) {
+    if (!apm->CreateAndAttachAecDump(
+            handle, -1, webrtc_apm_ptr->aec_dump_work_queue.get())) {
       return -ENOMEM;
     }
-    apm->AttachAecDump(std::move(aec_dump));
   } else {
     apm->DetachAecDump();
     webrtc_apm_ptr->aec_dump_work_queue.reset();
