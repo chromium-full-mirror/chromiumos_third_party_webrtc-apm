@@ -370,6 +370,10 @@ int webrtc_apm_aec_dump(webrtc_apm webrtc_apm_ptr, int start, FILE* handle) {
   webrtc::AudioProcessing* apm = webrtc_apm_ptr->apm.get();
 
   if (start) {
+    if (webrtc_apm_ptr->aec_dump_work_queue) {
+      // An aec_dump is already attached, detach it first.
+      apm->DetachAecDump();
+    }
     webrtc_apm_ptr->aec_dump_work_queue =
         webrtc::CreateDefaultTaskQueueFactory()->CreateTaskQueue(
             "aecdump-worker-queue", webrtc::TaskQueueFactory::Priority::LOW);
