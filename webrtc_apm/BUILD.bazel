@@ -44,6 +44,8 @@ cc_test(
     linkopts = ["-lm"],
     deps = [
         ":webrtc_apm",
+        "//modules/audio_processing:audioproc_debug_proto",
+        "//modules/audio_processing:audioproc_protobuf_utils",
         "@pkg_config//gmock",
         "@pkg_config//gtest",
         "@pkg_config//gtest_main",
